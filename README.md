@@ -451,7 +451,7 @@ services:
   # 🐘 PHP 8.4-FPM
   # Exécute le code Symfony.
   # Le dossier racine CMF/ est monté directement
-  # dans /var/www/html (pas de sous-dossier symfony/)
+  # dans /var/www/html (pas de sous-dossier Symfony/)
   # je test avec /app
   # ============================================
   php:
@@ -871,4 +871,41 @@ Tester sur http://localhost:8080
 
 > 💡 **Résumé** : Lance `docker compose up -d --build`, entre dans le conteneur PHP avec `docker exec -it cmf_php bash`, installe Symfony avec Composer, et ton environnement complet est opérationnel en quelques minutes !
 
-### Utilisation de serveur en local qui sera sur la machine virtuel chez OVH
+### Premier test 
+
+> impossible d'installer Symfony directement avec php en docker
+> erreur : Project directory "/app/." is not empty.
+> j'ai donc tout supprimé : 
+```bash
+# pour supprimer les container
+docker compose down -v
+# pour tout supprimer (volumes compris)
+docker system prune -a
+```
+
+ 
+### Proposition 1
+
+> Installer symphony en docker comme php.
+> je vais donc sur le site de Symphony : https://symfony.com/doc/7.4/setup/docker.html
+> je vérifie si j'ai bien installé docker Compose : 
+```bash
+docker compose version
+```
+> sinon, installation  (ici une commande Ubuntu et Debian) https://github.com/dunglas/symfony-docker:
+```bash
+sudo apt-get update
+sudo apt-get install docker-compose-plugin
+```
+
+```bash
+Run docker compose build --pull --no-cache # to build fresh images
+Run docker compose up --wait # to set up and start a fresh Symfony project
+Open https://localhost # in your favorite web browser and accept the auto-generated TLS certificate
+Run docker compose down --remove-orphans # to stop the Docker containers.
+```
+
+
+
+
+### Utilisation de serveur en local qui sera sur la machine virtuelle chez OVH

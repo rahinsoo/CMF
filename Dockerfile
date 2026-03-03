@@ -57,5 +57,5 @@ WORKDIR /app
 # pour correspondre à l'utilisateur hôte (UID 1000)
 # Evite les problèmes de droits sur les fichiers créés
 # ============================================
-#RUN groupmod -g 1000 www-data && usermod -u 1000 www-data
-RUN groupmod -g 1000 app-data && usermod -u 1000 app-data
+RUN groupmod -g 1000 www-data && usermod -u 1000 www-data
+# RUN groupmod -g 1000 app-data && usermod -u 1000 app-data

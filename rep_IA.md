@@ -1,3 +1,358 @@
+# Outils Gratuits pour Webinaires avec Symfony 🎯
+
+## 🏆 Ma Recommandation : **Jitsi Meet + Rocket.Chat**
+
+C'est la combinaison **100% gratuite, open source** et la plus simple à intégrer avec Symfony.
+
+---
+
+## 📹 Visioconférence : **Jitsi Meet**
+
+### Pourquoi Jitsi ?
+| Critère | Détail |
+|---|---|
+| 💰 Prix | **Gratuit** (hébergé sur `meet.jit.si`) |
+| 🔧 Installation | **Aucune** (ou auto-hébergeable) |
+| 🔑 API Key | **Non requise** pour commencer |
+| 👥 Participants | **Illimité** |
+| 📱 Support | Web, iOS, Android |
+| 🔒 Sécurité | Lien unique par salle |
+
+### Fonctionnement
+> Jitsi fonctionne avec des **salles nommées**. Il suffit de générer un nom de salle unique pour avoir un lien de visioconférence dédié à chaque webinaire. **Pas d'inscription, pas d'API.**
+
+```php name=src/Service/JitsiService.php
+<?php
+
+namespace App\Service;
+
+class JitsiService
+{
+    private string $domain;
+
+    public function __construct(string $domain = 'meet.jit.si')
+    {
+        $this->domain = $domain;
+    }
+
+    /**
+     * Génère un lien unique et sécurisé pour chaque webinaire
+     */
+    public function generateLink(string $webinarTitle): string
+    {
+        $slug = $this->slugify($webinarTitle);
+        $uniqueToken = bin2hex(random_bytes(8)); // Token aléatoire sécurisé
+
+        return "https://{$this->domain}/webinar-{$slug}-{$uniqueToken}";
+    }
+
+    private function slugify(string $text): string
+    {
+        $text = strtolower(trim($text));
+        $text = preg_replace('/[^a-z0-9]+/', '-', $text);
+        return trim($text, '-');
+    }
+}
+```
+
+---
+
+## 💬 Chat : **Rocket.Chat**
+
+### Pourquoi Rocket.Chat ?
+| Critère | Détail |
+|---|---|
+| 💰 Prix | **Gratuit** (plan Community) |
+| 🔧 Hébergement | Cloud gratuit ou auto-hébergé |
+| 🔑 API REST | **Complète et gratuite** |
+| 💬 Channels | Canaux dédiés par webinaire |
+| 📌 Messages | Persistants, historique complet |
+| 🔔 Notifications | Temps réel |
+
+### Intégration Symfony avec Rocket.Chat
+```bash name=terminal
+composer require guzzlehttp/guzzle
+```
+
+```php name=src/Service/RocketChatService.php
+<?php
+
+namespace App\Service;
+
+use GuzzleHttp\Client;
+
+class RocketChatService
+{
+    private Client $client;
+    private string $authToken;
+    private string $userId;
+
+    public function __construct(
+        string $serverUrl,
+        string $authToken,
+        string $userId
+    ) {
+        $this->client    = new Client(['base_uri' => $serverUrl . '/api/v1/']);
+        $this->authToken = $authToken;
+        $this->userId    = $userId;
+    }
+
+    /**
+     * Crée un canal de chat dédié au webinaire
+     */
+    public function createChannelForWebinar(string $webinarSlug): array
+    {
+        $response = $this->client->post('channels.create', [
+            'headers' => [
+                'X-Auth-Token' => $this->authToken,
+                'X-User-Id'    => $this->userId,
+            ],
+            'json' => [
+                'name'     => 'webinar-' . $webinarSlug,
+                'readOnly' => false,
+            ],
+        ]);
+
+        return json_decode($response->getBody(), true);
+    }
+
+    /**
+     * Envoie un message automatique dans le canal
+     */
+    public function sendMessage(string $channelName, string $message): void
+    {
+        $this->client->post('chat.postMessage', [
+            'headers' => [
+                'X-Auth-Token' => $this->authToken,
+                'X-User-Id'    => $this->userId,
+            ],
+            'json' => [
+                'channel' => '#' . $channelName,
+                'text'    => $message,
+            ],
+        ]);
+    }
+
+    /**
+     * Génère le lien direct vers le canal du webinaire
+     */
+    public function getChannelLink(string $serverUrl, string $channelName): string
+    {
+        return $serverUrl . '/channel/webinar-' . $channelName;
+    }
+}
+```
+
+---
+
+## 🗃️ Entité Webinar Complète
+
+```php name=src/Entity/Webinar.php
+<?php
+
+namespace App\Entity;
+
+use Doctrine\ORM\Mapping as ORM;
+
+#[ORM\Entity]
+#[ORM\Table(name: 'webinar')]
+class Webinar
+{
+    #[ORM\Id, ORM\GeneratedValue, ORM\Column]
+    private int $id;
+
+    #[ORM\Column(length: 255)]
+    private string $title;
+
+    #[ORM\Column(type: 'text')]
+    private string $description;
+
+    #[ORM\Column(type: 'datetime')]
+    private \DateTimeInterface $startAt;
+
+    #[ORM\Column(type: 'integer')]
+    private int $duration = 60; // en minutes
+
+    // 🎥 Lien visioconférence Jitsi
+    #[ORM\Column(length: 500)]
+    private string $videoLink;
+
+    // 💬 Lien canal Rocket.Chat
+    #[ORM\Column(length: 500)]
+    private string $chatLink;
+
+    // 📌 Nom du canal chat (pour l'API)
+    #[ORM\Column(length: 100)]
+    private string $chatChannel;
+
+    #[ORM\Column(type: 'integer', options: ['default' => 0])]
+    private int $participantCount = 0;
+
+    // Getters / Setters...
+    public function getId(): int { return $this->id; }
+    public function getTitle(): string { return $this->title; }
+    public function setTitle(string $title): self { $this->title = $title; return $this; }
+    public function getVideoLink(): string { return $this->videoLink; }
+    public function setVideoLink(string $link): self { $this->videoLink = $link; return $this; }
+    public function getChatLink(): string { return $this->chatLink; }
+    public function setChatLink(string $link): self { $this->chatLink = $link; return $this; }
+    public function getChatChannel(): string { return $this->chatChannel; }
+    public function setChatChannel(string $channel): self { $this->chatChannel = $channel; return $this; }
+    // ...
+}
+```
+
+---
+
+## 🎛️ Controller : Création d'un Webinaire Complet
+
+```php name=src/Controller/WebinarController.php
+<?php
+
+namespace App\Controller;
+
+use App\Entity\Webinar;
+use App\Service\JitsiService;
+use App\Service\RocketChatService;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Attribute\Route;
+
+class WebinarController extends AbstractController
+{
+    #[Route('/admin/webinar/new', name: 'webinar_new', methods: ['GET', 'POST'])]
+    public function create(
+        Request $request,
+        JitsiService $jitsi,
+        RocketChatService $rocketChat,
+        EntityManagerInterface $em
+    ): Response {
+
+        if ($request->isMethod('POST')) {
+            $data = $request->request->all();
+            $slug = strtolower(preg_replace('/[^a-z0-9]+/i', '-', $data['title']));
+
+            // 1. 🎥 Générer le lien Jitsi
+            $videoLink = $jitsi->generateLink($data['title']);
+
+            // 2. 💬 Créer le canal Rocket.Chat
+            $channel     = $rocketChat->createChannelForWebinar($slug);
+            $chatChannel = 'webinar-' . $slug;
+            $chatLink    = $rocketChat->getChannelLink($_ENV['ROCKETCHAT_URL'], $slug);
+
+            // 3. 📨 Envoyer un message de bienvenue automatique
+            $rocketChat->sendMessage($chatChannel,
+                "🎉 Bienvenue dans le webinaire **{$data['title']}** !\n" .
+                "📅 Date : {$data['start_at']}\n" .
+                "🎥 Lien visio : {$videoLink}\n" .
+                "Posez vos questions ici pendant le webinaire."
+            );
+
+            // 4. 💾 Sauvegarder en base de données
+            $webinar = new Webinar();
+            $webinar->setTitle($data['title'])
+                    ->setDescription($data['description'])
+                    ->setStartAt(new \DateTime($data['start_at']))
+                    ->setVideoLink($videoLink)
+                    ->setChatChannel($chatChannel)
+                    ->setChatLink($chatLink);
+
+            $em->persist($webinar);
+            $em->flush();
+
+            $this->addFlash('success', 'Webinaire créé avec succès !');
+            return $this->redirectToRoute('webinar_show', ['id' => $webinar->getId()]);
+        }
+
+        return $this->render('webinar/new.html.twig');
+    }
+}
+```
+
+---
+
+## 🌐 Template Twig de la Page Webinaire
+
+````markdown name=templates/webinar/show.html.twig
+```twig
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<div class="webinar-container">
+    <h1>{{ webinar.title }}</h1>
+    <p>{{ webinar.description }}</p>
+    <p>📅 <strong>{{ webinar.startAt|date('d/m/Y à H:i') }}</strong></p>
+
+    {# 🎥 Bouton Visioconférence #}
+    <a href="{{ webinar.videoLink }}" target="_blank" class="btn btn-primary btn-lg">
+        🎥 Rejoindre la visioconférence (Jitsi)
+    </a>
+
+    {# 💬 Bouton Chat #}
+    <a href="{{ webinar.chatLink }}" target="_blank" class="btn btn-secondary btn-lg">
+        💬 Rejoindre le Chat (Rocket.Chat)
+    </a>
+</div>
+{% endblock %}
+```
+````
+
+---
+
+## ⚙️ Configuration `.env`
+
+```bash name=.env
+# Rocket.Chat
+ROCKETCHAT_URL=https://votre-instance.rocket.chat
+ROCKETCHAT_AUTH_TOKEN=votre_token
+ROCKETCHAT_USER_ID=votre_user_id
+```
+
+---
+
+## 🔄 Flux Complet du Système
+
+```
+[Admin crée un webinaire]
+         ↓
+[Jitsi  →  Génération lien unique /webinar-slug-token]
+         ↓
+[Rocket.Chat  →  Création canal #webinar-slug]
+         ↓
+[Message automatique envoyé dans le canal]
+         ↓
+[Webinaire sauvegardé en BDD avec les 2 liens]
+         ↓
+[Participants reçoivent email avec les 2 liens]
+         ↓
+[Jour J : Visio Jitsi + Chat Rocket.Chat en parallèle]
+```
+
+---
+
+## 📊 Comparatif Final
+
+| Outil | Rôle | Gratuit | Difficulté d'intégration |
+|---|---|---|---|
+| **Jitsi Meet** | Visioconférence | ✅ 100% | ⭐ Très facile |
+| **Rocket.Chat** | Chat temps réel | ✅ Community | ⭐⭐ Facile |
+| **Symfony Mailer** | Emails invitations | ✅ | ⭐ Très facile |
+| **Symfony Messenger** | Rappels automatiques | ✅ | ⭐⭐ Facile |
+
+---
+
+## 📚 Sources
+
+- 📖 [Jitsi Meet - Developer Guide](https://jitsi.github.io/handbook/docs/dev-guide/dev-guide-web)
+- 📖 [Rocket.Chat REST API](https://developer.rocket.chat/apidocs/rest-api-introduction)
+- 📖 [Symfony Mailer Docs](https://symfony.com/doc/current/mailer.html)
+- 📖 [GuzzleHTTP Docs](https://docs.guzzlephp.org/en/stable/)
+- 📖 [Doctrine ORM - Symfony](https://symfony.com/doc/current/doctrine.html)
+
+> 💡 **Résumé** : **Jitsi** pour la visio (zéro config), **Rocket.Chat** pour le chat persistant avec historique. Les deux sont open source, gratuits, et s'intègrent facilement dans Symfony via des services dédiés.
+
 # Docker pour le projet CMF (Webinar) 🐳
 
 Le dépôt `rahinsoo/CMF` est quasi vide pour l'instant. Voici une configuration **complète et précise** pour dockeriser ton site de Webinaire avec Symfony 7.4.
