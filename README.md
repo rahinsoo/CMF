@@ -337,7 +337,7 @@ Si ton site donne un lien Discord brut, tu perds :
 
 ### Solution propre 👇
 
-1. L’utilisateur s’insit sur ton site
+1. L’utilisateur s’inscrit sur ton site
 2. Il reçoit un email avec :
 
 * Lien Discord
@@ -422,21 +422,22 @@ Pratique :
 # Docker pour le projet CMF (Webinar) 🐳
 
 Le dépôt `rahinsoo/CMF` est quasi vide pour l'instant. Voici une configuration **complète et précise** pour dockeriser ton site de Webinaire avec Symfony 7.4.
-
+J'ai fait plusieurs essais, voici celui que j'ai choisi.
 ---
 
 ## 📁 Structure des fichiers à créer
 
 ```
-CMF/
-├── docker/
-│   ├── php/
-│   │   └── Dockerfile
-│   └── nginx/
-│       └── default.conf
+CMF/                          ← RACINE du projet (Symfony + Docker)
+├── public/
+│   └── index.php             ← Point d'entrée Symfony
+├── src/
+├── config/
 ├── docker-compose.yml
-├── .env
-└── symfony/          ← ton projet Symfony ira ici
+├── Dockerfile                ← Image PHP (plus de dossier docker/)
+├── default.conf              ← Config Nginx
+├── .env                      ← Variables Docker + Symfony
+└── ...                       ← Reste des fichiers Symfony
 ```
 
 ---
@@ -444,30 +445,32 @@ CMF/
 ## 1️⃣ `docker-compose.yml` — Le fichier central
 
 ```yaml name=docker-compose.yml
-version: '3.9'
-
 services:
 
   # ============================================
-  # 🐘 PHP 8.4 + Symfony
+  # 🐘 PHP 8.4-FPM
+  # Exécute le code Symfony.
+  # Le dossier racine CMF/ est monté directement
+  # dans /var/www/html (pas de sous-dossier symfony/)
+  # je test avec /app
   # ============================================
   php:
     build:
-      context: ./docker/php
+      context: .               # Dockerfile à la racine de CMF/
       dockerfile: Dockerfile
     container_name: cmf_php
     volumes:
-      - ./symfony:/var/www/symfony
+      - .:/app  #.:/var/www/html        # CMF/ → /var/www/html dans le conteneur
     networks:
       - cmf_network
     depends_on:
       - database
-    environment:
-      APP_ENV: dev
-      DATABASE_URL: "mysql://root:${MYSQL_ROOT_PASSWORD}@database:3306/${MYSQL_DATABASE}?serverVersion=8.0&charset=utf8mb4"
 
   # ============================================
-  # 🌐 Nginx (serveur web)
+  # 🌐 Nginx
+  # Reçoit les requêtes HTTP et les transmet
+  # à PHP-FPM. Sert aussi les fichiers statiques.
+  # Port local 8080 → port 80 du conteneur
   # ============================================
   nginx:
     image: nginx:alpine
@@ -475,15 +478,18 @@ services:
     ports:
       - "8080:80"
     volumes:
-      - ./symfony:/var/www/symfony
-      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - .:/app    #.:/var/www/html                          # Même dossier que PHP
+      - ./default.conf:/etc/nginx/conf.d/default.conf  # Config Nginx
     networks:
       - cmf_network
     depends_on:
       - php
 
   # ============================================
-  # 🗄️ MySQL 8.0 (MariaDB)
+  # 🗄️ MariaDB 10.11 (compatible MySQL 8.0)
+  # Stocke toutes les données du site.
+  # Les données sont persistées dans un volume Docker
+  # pour ne pas être perdues au redémarrage.
   # ============================================
   database:
     image: mariadb:10.11
@@ -495,7 +501,7 @@ services:
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     ports:
-      - "3306:3306"
+      - "3306:3306"             # Accessible sur 127.0.0.1:3306 depuis ta machine
     volumes:
       - cmf_db_data:/var/lib/mysql
     networks:
@@ -503,15 +509,17 @@ services:
 
   # ============================================
   # 🛠️ phpMyAdmin
+  # Interface graphique pour gérer la base de données.
+  # Accessible sur http://127.0.0.1:8081
   # ============================================
   phpmyadmin:
     image: phpmyadmin/phpmyadmin:latest
     container_name: cmf_phpmyadmin
     restart: always
     ports:
-      - "8081:80"
+      - "8081:80"               # Accessible sur 127.0.0.1:8081 depuis ta machine
     environment:
-      PMA_HOST: database
+      PMA_HOST: database        # Nom du service MariaDB ci-dessus
       PMA_PORT: 3306
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     networks:
@@ -519,10 +527,16 @@ services:
     depends_on:
       - database
 
+# ============================================
+# Réseau interne partagé entre tous les conteneurs
+# ============================================
 networks:
   cmf_network:
     driver: bridge
 
+# ============================================
+# Volume persistant pour les données MariaDB
+# ============================================
 volumes:
   cmf_db_data:
     driver: local
@@ -532,28 +546,39 @@ volumes:
 
 ---
 
-## 2️⃣ `docker/php/Dockerfile` — Image PHP personnalisée
+## 2️⃣ `Dockerfile` — À la racine de CMF/
 
-```dockerfile name=docker/php/Dockerfile
+```dockerfile name=Dockerfile
+# ============================================
+# Image de base : PHP 8.4 avec PHP-FPM
+# PHP-FPM = gestionnaire de processus PHP,
+# il reçoit les requêtes de Nginx et exécute le PHP
+# ============================================
 FROM php:8.4-fpm
 
 # ============================================
-# Installation des dépendances système
+# Dépendances système nécessaires pour Symfony
 # ============================================
 RUN apt-get update && apt-get install -y \
-    git \
-    curl \
-    unzip \
-    zip \
-    libicu-dev \
-    libpq-dev \
-    libzip-dev \
-    libonig-dev \
-    libxml2-dev \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+    git \           
+    curl \          
+    unzip \         
+    zip \           
+    libicu-dev \    
+    libzip-dev \    
+    libonig-dev \   
+    libxml2-dev \   
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # ============================================
-# Extensions PHP requises pour Symfony
+# Extensions PHP requises par Symfony 7.4
+# - pdo_mysql    : connexion à MariaDB/MySQL
+# - intl         : internationalisation (dates, langues)
+# - zip          : gestion des archives (Composer)
+# - opcache      : mise en cache du bytecode PHP (performance)
+# - mbstring     : gestion des chaînes multi-octets (UTF-8)
+# - xml          : traitement XML
 # ============================================
 RUN docker-php-ext-install \
     pdo \
@@ -565,56 +590,107 @@ RUN docker-php-ext-install \
     xml
 
 # ============================================
-# Composer
+# Composer : gestionnaire de dépendances PHP
+# Copié depuis l'image officielle composer:latest
 # ============================================
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # ============================================
-# Répertoire de travail
+# Répertoire de travail dans le conteneur.
+# Correspond au dossier CMF/ monté depuis l'hôte.
+# C'est ici que Symfony sera installé.
 # ============================================
-WORKDIR /var/www/symfony
+# WORKDIR /var/www/html
+WORKDIR /app
 
 # ============================================
-# Permissions
+# Ajustement des permissions de www-data
+# pour correspondre à l'utilisateur hôte (UID 1000)
+# Evite les problèmes de droits sur les fichiers créés
 # ============================================
-RUN groupmod -g 1000 www-data && usermod -u 1000 www-data
-
-USER www-data
+#RUN groupmod -g 1000 www-data && usermod -u 1000 www-data
+RUN groupmod -g 1000 app-data && usermod -u 1000 app-data
 ```
 
 ---
 
-## 3️⃣ `docker/nginx/default.conf` — Configuration Nginx
+## 3️⃣ `default.conf` — Configuration Nginx
 
-```nginx name=docker/nginx/default.conf
+```nginx name=default.conf
+# ============================================
+# Configuration Nginx pour Symfony 7.4
+# ============================================
 server {
     listen 80;
-    server_name localhost;
 
-    root /var/www/symfony/public;
+    # 127.0.0.1 = ta machine locale.
+    # Dans Docker, Nginx écoute sur toutes les interfaces
+    # du conteneur, le binding 127.0.0.1:8080 est géré
+    # par docker-compose (ports: "8080:80").
+    server_name 127.0.0.1 localhost;
+
+    # ============================================
+    # Point d'entrée : CMF/public/
+    # Nginx sert les fichiers depuis ce dossier.
+    # Symfony place son index.php dans /public/
+    # ============================================
+    # root /var/www/html/public;
+    root /app/public;
+
+    # Fichier par défaut à servir
     index index.php;
 
-    # Gestion des routes Symfony
+    # ============================================
+    # Règle principale de routage Symfony
+    # Toutes les URLs qui ne correspondent pas
+    # à un fichier/dossier réel sont redirigées
+    # vers index.php (le Front Controller Symfony)
+    # ============================================
     location / {
         try_files $uri $uri/ /index.php$is_args$args;
     }
 
-    # Exécution des fichiers PHP via PHP-FPM
+    # ============================================
+    # Traitement des fichiers PHP
+    # Nginx transmet les requêtes .php à PHP-FPM
+    # via le protocole FastCGI sur le port 9000.
+    # "php" = nom du service dans docker-compose.yml
+    # ============================================
     location ~ \.php$ {
         fastcgi_pass php:9000;
+        fastcgi_split_path_info ^(.+\.php)(/.*)$;
         fastcgi_index index.php;
         fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
         include fastcgi_params;
+
+        # Sécurité : évite l'exécution de PHP
+        # dans des chemins non existants
+        fastcgi_param PATH_INFO $fastcgi_path_info;
     }
 
-    # Sécurité : bloquer l'accès aux fichiers cachés
-    location ~ /\.ht {
+    # ============================================
+    # Fichiers statiques (CSS, JS, images)
+    # Servis directement par Nginx sans passer par PHP.
+    # expires 1y = mis en cache 1 an par le navigateur
+    # ============================================
+    location ~* \.(css|js|jpg|jpeg|png|gif|ico|woff|woff2|svg)$ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+        try_files $uri =404;
+    }
+
+    # ============================================
+    # Sécurité : interdit l'accès aux fichiers cachés
+    # Ex : .env, .git, .htaccess
+    # ============================================
+    location ~ /\. {
         deny all;
+        return 404;
     }
 
-    # Logs
-    error_log  /var/log/nginx/error.log;
-    access_log /var/log/nginx/access.log;
+    # Logs d'erreur et d'accès Nginx
+    error_log  /var/log/nginx/cmf_error.log;
+    access_log /var/log/nginx/cmf_access.log;
 }
 ```
 
@@ -623,77 +699,119 @@ server {
 ## 4️⃣ `.env` — Variables d'environnement
 
 ```bash name=.env
-# Base de données
+# ============================================
+# 🗄️ CONFIGURATION MARIADB
+# Ces variables sont lues par docker-compose.yml
+# pour initialiser le conteneur MariaDB.
+# ============================================
+
+# Mot de passe du super-utilisateur root MariaDB
 MYSQL_ROOT_PASSWORD=root_secret
+
+# Nom de la base de données créée automatiquement
 MYSQL_DATABASE=cmf_webinar
+
+# Utilisateur applicatif (utilisé par Symfony)
 MYSQL_USER=cmf_user
+
+# Mot de passe de l'utilisateur applicatif
 MYSQL_PASSWORD=cmf_secret
+
+# ============================================
+# 🔗 URL DE CONNEXION DOCTRINE (Symfony)
+# 127.0.0.1 depuis ta machine hôte = port 3306 exposé
+# MAIS dans Docker, Symfony tourne dans le conteneur PHP
+# qui communique avec "database" (nom du service Docker).
+# On utilise donc "database" comme hôte, pas 127.0.0.1.
+#
+# ⚠️ Si tu te connectes depuis un outil EXTERNE
+# à Docker (TablePlus, DBeaver...) → utilise 127.0.0.1:3306
+# ============================================
+DATABASE_URL="mysql://cmf_user:cmf_secret@database:3306/cmf_webinar?serverVersion=8.0&charset=utf8mb4"
+
+# ============================================
+# 🔧 ENVIRONNEMENT SYMFONY
+# dev   = mode développement (debug activé, logs détaillés)
+# prod  = mode production (performances optimisées)
+# ============================================
+APP_ENV=dev
+APP_SECRET=change_me_with_a_random_32char_string
 ```
 
 ---
 
 ## 5️⃣ Installation pas à pas 🚀
 
-### Étape 1 — Cloner le dépôt et se positionner dedans
+### Étape 1 — Construire et démarrer Docker
 ```bash name=terminal
-git clone https://github.com/rahinsoo/CMF.git
-cd CMF
-```
-
-### Étape 2 — Créer le fichier `.env` à la racine
-```bash name=terminal
-cp .env.example .env  # ou créer manuellement avec le contenu ci-dessus
-```
-
-### Étape 3 — Démarrer les conteneurs Docker
-```bash name=terminal
+cd CMF/
 docker compose up -d --build
 ```
 
-### Étape 4 — Créer le projet Symfony 7.4 dans le conteneur PHP
+### Étape 2 — Installer Symfony 7.4 dans le conteneur
 ```bash name=terminal
 # Entrer dans le conteneur PHP
 docker exec -it cmf_php bash
 
-# Créer le projet Symfony 7.4 dans le dossier courant
+# Installer Symfony 7.4 directement dans /var/www/html (= CMF/)
 composer create-project symfony/skeleton:"7.4.*" .
 
-# Installer les composants essentiels
+# Installer les bundles nécessaires au Webinaire
 composer require symfony/webapp-pack
 composer require doctrine/doctrine-bundle doctrine/orm
-composer require symfony/mailer
 composer require guzzlehttp/guzzle
+composer require symfony/mailer
 ```
 
-### Étape 5 — Configurer le `.env` de Symfony
-```bash name=symfony/.env
-# Dans symfony/.env, modifier la ligne DATABASE_URL :
-DATABASE_URL="mysql://cmf_user:cmf_secret@database:3306/cmf_webinar?serverVersion=8.0&charset=utf8mb4"
-```
-
-### Étape 6 — Créer la base de données et les tables
+### Étape 3 — Créer la base de données
 ```bash name=terminal
-# Toujours dans le conteneur PHP
+# Toujours dans le conteneur
 php bin/console doctrine:database:create
 php bin/console doctrine:migrations:migrate
 ```
 
-### Étape 7 — Vider le cache
+### Étape 4 — Vérifier que tout fonctionne
 ```bash name=terminal
-php bin/console cache:clear
+# Quitter le conteneur
+exit
+
+# Vérifier l'état des conteneurs
+docker compose ps
 ```
 
 ---
 
-## 6️⃣ Accéder aux services 🌐
+## 🌐 Accès aux services
 
 | Service | URL | Identifiants |
 |---|---|---|
-| 🌐 **Site Symfony** | http://localhost:8080 | — |
-| 🛠️ **phpMyAdmin** | http://localhost:8081 | root / root_secret |
-| 🗄️ **MySQL** | localhost:3306 | cmf_user / cmf_secret |
+| 🌐 **Site Symfony** | http://127.0.0.1:8080 | — |
+| 🛠️ **phpMyAdmin** | http://127.0.0.1:8081 | root / root_secret |
+| 🗄️ **MySQL (externe)** | 127.0.0.1:3306 | cmf_user / cmf_secret |
 
 ---
+
+## 📊 Schéma final du réseau Docker
+
+```
+Ta machine (hôte)
+│
+├── 127.0.0.1:8080  ──→  [Nginx :80]  ──→  [PHP-FPM :9000]
+│                              │                    │
+│                         Fichiers statiques    Symfony
+│                         CMF/public/           CMF/public/index.php
+│
+├── 127.0.0.1:8081  ──→  [phpMyAdmin :80]  ──→  [MariaDB :3306]
+│
+└── 127.0.0.1:3306  ──→  [MariaDB :3306]
+                          (accès direct outils DB)
+```
+
+> 💡 **Résumé des points clés** :
+> - **Nginx** est indispensable avec PHP-FPM, il reçoit les requêtes HTTP et délègue le PHP
+> - **`root /var/www/html/public`** dans Nginx pointe directement vers `CMF/public/index.php`
+> - **`DATABASE_URL`** utilise `database` (nom du service Docker) et **non** `127.0.0.1`, car Symfony tourne **à l'intérieur** du réseau Docker
+> - **`127.0.0.1`** est utilisé uniquement pour accéder aux services **depuis ta machine** (navigateur, outils BDD)
 
 ## 7️⃣ Commandes Docker utiles
 

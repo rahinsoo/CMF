@@ -1,43 +1,48 @@
-version: '3.9'
-
 services:
 
   # ============================================
-  # 🐘 PHP 8.4 + Symfony
+  # 🐘 PHP 8.4-FPM
+  # Exécute le code Symfony.
+  # Le dossier racine CMF/ est monté directement
+  # dans /var/www/html (pas de sous-dossier symfony/)
+  # je test avec /app
   # ============================================
   php:
     build:
-      context: ./docker/php
+      context: .               # Dockerfile à la racine de CMF/
       dockerfile: Dockerfile
     container_name: cmf_php
     volumes:
-      - ./symfony:/var/www/symfony
+      - .:/app  #.:/var/www/html        # CMF/ → /var/www/html dans le conteneur
     networks:
       - cmf_network
     depends_on:
       - database
-    environment:
-      APP_ENV: dev
-      DATABASE_URL: "mysql://root:${MYSQL_ROOT_PASSWORD}@database:3306/${MYSQL_DATABASE}?serverVersion=8.0&charset=utf8mb4"
 
   # ============================================
-  # 🌐 Nginx (serveur web)
+  # 🌐 Nginx
+  # Reçoit les requêtes HTTP et les transmet
+  # à PHP-FPM. Sert aussi les fichiers statiques.
+  # Port local 8080 → port 80 du conteneur
   # ============================================
   nginx:
     image: nginx:alpine
     container_name: cmf_nginx
     ports:
-      - "8000:80"
+      - "8080:80"
     volumes:
-      - ./symfony:/var/www/symfony
-      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - .:/app    #.:/var/www/html                          # Même dossier que PHP
+      - ./default.conf:/etc/nginx/conf.d/default.conf  # Config Nginx
     networks:
       - cmf_network
     depends_on:
       - php
 
   # ============================================
-  # 🗄️ MySQL 8.0 (MariaDB)
+  # 🗄️ MariaDB 10.11 (compatible MySQL 8.0)
+  # Stocke toutes les données du site.
+  # Les données sont persistées dans un volume Docker
+  # pour ne pas être perdues au redémarrage.
   # ============================================
   database:
     image: mariadb:10.11
@@ -49,7 +54,7 @@ services:
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     ports:
-      - "3306:3306"
+      - "3306:3306"             # Accessible sur 127.0.0.1:3306 depuis ta machine
     volumes:
       - cmf_db_data:/var/lib/mysql
     networks:
@@ -57,15 +62,17 @@ services:
 
   # ============================================
   # 🛠️ phpMyAdmin
+  # Interface graphique pour gérer la base de données.
+  # Accessible sur http://127.0.0.1:8081
   # ============================================
   phpmyadmin:
     image: phpmyadmin/phpmyadmin:latest
     container_name: cmf_phpmyadmin
     restart: always
     ports:
-      - "8080:80"
+      - "8081:80"               # Accessible sur 127.0.0.1:8081 depuis ta machine
     environment:
-      PMA_HOST: database
+      PMA_HOST: database        # Nom du service MariaDB ci-dessus
       PMA_PORT: 3306
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     networks:
@@ -73,10 +80,16 @@ services:
     depends_on:
       - database
 
+# ============================================
+# Réseau interne partagé entre tous les conteneurs
+# ============================================
 networks:
   cmf_network:
     driver: bridge
 
+# ============================================
+# Volume persistant pour les données MariaDB
+# ============================================
 volumes:
   cmf_db_data:
     driver: local
