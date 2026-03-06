@@ -1,0 +1,166 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Créer un webinaire — CMF{% endblock %}
+
+{% block stylesheets %}
+<style>
+    :root {
+        --cmf-blue: #2563eb;
+        --cmf-dark: #1e293b;
+        --cmf-light: #f1f5f9;
+        --cmf-border: #e2e8f0;
+    }
+    body {
+        font-family: 'Segoe UI', system-ui, sans-serif;
+        background: var(--cmf-light);
+        color: var(--cmf-dark);
+        margin: 0;
+    }
+    .page-header {
+        background: var(--cmf-dark);
+        color: #fff;
+        padding: 1.5rem 2rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    .page-header a {
+        color: #94a3b8;
+        text-decoration: none;
+        font-size: 0.9rem;
+    }
+    .page-header a:hover { color: #fff; }
+    .page-header h1 {
+        margin: 0;
+        font-size: 1.5rem;
+    }
+    .container {
+        max-width: 680px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+    }
+    .card {
+        background: #fff;
+        border-radius: 12px;
+        border: 1px solid var(--cmf-border);
+        padding: 2rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .info-box {
+        background: #dbeafe;
+        border: 1px solid #93c5fd;
+        border-radius: 8px;
+        padding: 1rem 1.25rem;
+        margin-bottom: 1.5rem;
+        font-size: 0.9rem;
+        color: #1e40af;
+    }
+    .info-box strong { display: block; margin-bottom: 0.25rem; }
+    .form-group {
+        margin-bottom: 1.25rem;
+    }
+    label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 0.4rem;
+        font-size: 0.9rem;
+    }
+    input, select, textarea {
+        width: 100%;
+        padding: 0.6rem 0.8rem;
+        border: 1px solid var(--cmf-border);
+        border-radius: 8px;
+        font-size: 0.95rem;
+        font-family: inherit;
+        color: var(--cmf-dark);
+        background: #fff;
+        box-sizing: border-box;
+        transition: border-color 0.2s;
+    }
+    input:focus, select:focus, textarea:focus {
+        outline: none;
+        border-color: var(--cmf-blue);
+        box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+    }
+    textarea { resize: vertical; min-height: 90px; }
+    .flash-error {
+        background: #fee2e2;
+        color: #991b1b;
+        border: 1px solid #fca5a5;
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+    }
+    .btn-submit {
+        width: 100%;
+        background: var(--cmf-blue);
+        color: #fff;
+        border: none;
+        padding: 0.85rem;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .btn-submit:hover { background: #1d4ed8; }
+</style>
+{% endblock %}
+
+{% block body %}
+<header class="page-header">
+    <a href="{{ path('webinar_list') }}">← Retour</a>
+    <h1>➕ Créer un webinaire</h1>
+</header>
+
+<div class="container">
+    {% for message in app.flashes('error') %}
+        <div class="flash-error">⚠️ {{ message }}</div>
+    {% endfor %}
+
+    <div class="card">
+        <div class="info-box">
+            <strong>🎥 Visioconférence automatique</strong>
+            Un lien <strong>Jitsi Meet</strong> gratuit sera généré automatiquement pour votre webinaire.
+            Aucune configuration requise — jusqu'à 50 participants simultanés.
+        </div>
+
+        <form method="post" action="{{ path('webinar_new') }}">
+            <div class="form-group">
+                <label for="company">🏢 Nom de l'entreprise <span style="color:#ef4444">*</span></label>
+                <input type="text" id="company" name="company" required placeholder="Ex : TechCorp SAS" />
+            </div>
+
+            <div class="form-group">
+                <label for="title">📌 Titre du webinaire <span style="color:#ef4444">*</span></label>
+                <input type="text" id="title" name="title" required placeholder="Ex : Développeur Web en 2025" />
+            </div>
+
+            <div class="form-group">
+                <label for="theme">🏷️ Thème</label>
+                <select id="theme" name="theme">
+                    <option value="Tech">Tech</option>
+                    <option value="Marketing">Marketing</option>
+                    <option value="Commerce">Commerce</option>
+                    <option value="Santé">Santé</option>
+                    <option value="Industrie">Industrie</option>
+                    <option value="Autre">Autre</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="description">📝 Description</label>
+                <textarea id="description" name="description" placeholder="Décrivez le contenu de ce webinaire..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="start_at">📅 Date et heure de début <span style="color:#ef4444">*</span></label>
+                <input type="datetime-local" id="start_at" name="start_at" required />
+            </div>
+
+            <button type="submit" class="btn-submit">🚀 Créer le webinaire (max 50 participants)</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

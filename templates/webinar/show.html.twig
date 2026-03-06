@@ -1,0 +1,403 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ webinar.title }} — CMF Webinar{% endblock %}
+
+{% block stylesheets %}
+<style>
+    :root {
+        --cmf-blue: #2563eb;
+        --cmf-dark: #1e293b;
+        --cmf-light: #f1f5f9;
+        --cmf-border: #e2e8f0;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+        font-family: 'Segoe UI', system-ui, sans-serif;
+        background: var(--cmf-light);
+        color: var(--cmf-dark);
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+    /* Top bar */
+    .top-bar {
+        background: var(--cmf-dark);
+        color: #fff;
+        padding: 0.9rem 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+    }
+    .top-bar .company { font-weight: 700; font-size: 1rem; }
+    .top-bar a { color: #94a3b8; text-decoration: none; font-size: 0.85rem; }
+    .top-bar a:hover { color: #fff; }
+
+    /* Title bar */
+    .title-bar {
+        background: #fff;
+        border-bottom: 1px solid var(--cmf-border);
+        padding: 0.75rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    .title-bar h1 {
+        margin: 0;
+        font-size: 1.25rem;
+        flex: 1;
+    }
+    .participant-badge {
+        background: #dcfce7;
+        color: #166534;
+        font-weight: 700;
+        font-size: 0.85rem;
+        padding: 0.3rem 0.8rem;
+        border-radius: 999px;
+        white-space: nowrap;
+    }
+    .participant-badge.full {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    /* Flash messages */
+    .flash-banner {
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+    .flash-banner.success { background: #dcfce7; color: #166534; }
+    .flash-banner.error   { background: #fee2e2; color: #991b1b; }
+
+    /* Main layout */
+    .main-layout {
+        flex: 1;
+        display: grid;
+        grid-template-columns: 1fr 320px;
+        min-height: 0;
+    }
+
+    /* Video zone */
+    .video-zone {
+        background: #0f172a;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 2.5rem;
+        gap: 1.5rem;
+        min-height: 400px;
+    }
+    .video-placeholder {
+        text-align: center;
+        color: #94a3b8;
+    }
+    .video-placeholder .icon { font-size: 4rem; margin-bottom: 0.5rem; }
+    .video-placeholder p { margin: 0 0 0.25rem; font-size: 0.95rem; }
+    .video-placeholder small { font-size: 0.8rem; color: #475569; }
+    .btn-join-video {
+        background: var(--cmf-blue);
+        color: #fff;
+        padding: 0.85rem 2rem;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 1rem;
+        transition: background 0.2s;
+        display: inline-block;
+    }
+    .btn-join-video:hover { background: #1d4ed8; }
+
+    /* Chat zone */
+    .chat-zone {
+        background: #fff;
+        border-left: 1px solid var(--cmf-border);
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+    .chat-header {
+        padding: 0.9rem 1rem;
+        border-bottom: 1px solid var(--cmf-border);
+        font-weight: 700;
+        font-size: 0.95rem;
+        background: #f8fafc;
+    }
+    .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 0.75rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        min-height: 200px;
+        max-height: 380px;
+    }
+    .chat-msg {
+        font-size: 0.875rem;
+        line-height: 1.4;
+    }
+    .chat-msg .author {
+        font-weight: 700;
+        color: var(--cmf-blue);
+        margin-right: 0.3rem;
+    }
+    .chat-msg .time {
+        font-size: 0.75rem;
+        color: #94a3b8;
+        margin-left: 0.3rem;
+    }
+    .chat-input-row {
+        display: flex;
+        padding: 0.75rem;
+        gap: 0.5rem;
+        border-top: 1px solid var(--cmf-border);
+    }
+    .chat-input-row input {
+        flex: 1;
+        padding: 0.5rem 0.75rem;
+        border: 1px solid var(--cmf-border);
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-family: inherit;
+    }
+    .chat-input-row input:focus {
+        outline: none;
+        border-color: var(--cmf-blue);
+    }
+    .chat-input-row button {
+        background: var(--cmf-blue);
+        color: #fff;
+        border: none;
+        padding: 0.5rem 0.85rem;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 0.85rem;
+        transition: background 0.2s;
+    }
+    .chat-input-row button:hover { background: #1d4ed8; }
+
+    /* Join panel */
+    .join-panel {
+        border-top: 1px solid var(--cmf-border);
+        padding: 0.75rem;
+        background: #f8fafc;
+    }
+    .join-panel h3 {
+        margin: 0 0 0.6rem;
+        font-size: 0.9rem;
+        color: var(--cmf-dark);
+    }
+    .join-panel form {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    .join-panel input {
+        padding: 0.45rem 0.7rem;
+        border: 1px solid var(--cmf-border);
+        border-radius: 6px;
+        font-size: 0.85rem;
+        font-family: inherit;
+    }
+    .join-panel input:focus {
+        outline: none;
+        border-color: var(--cmf-blue);
+    }
+    .join-panel button {
+        background: #16a34a;
+        color: #fff;
+        border: none;
+        padding: 0.5rem;
+        border-radius: 6px;
+        font-weight: 700;
+        cursor: pointer;
+        font-size: 0.85rem;
+        transition: background 0.2s;
+    }
+    .join-panel button:hover { background: #15803d; }
+    .full-notice {
+        color: #ef4444;
+        font-weight: 700;
+        font-size: 0.875rem;
+        text-align: center;
+        padding: 0.5rem;
+    }
+
+    /* Footer */
+    footer {
+        background: var(--cmf-dark);
+        color: #94a3b8;
+        text-align: center;
+        padding: 0.75rem;
+        font-size: 0.8rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .main-layout {
+            grid-template-columns: 1fr;
+        }
+        .chat-zone {
+            border-left: none;
+            border-top: 1px solid var(--cmf-border);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<!-- Top bar -->
+<div class="top-bar">
+    <span class="company">🏢 {{ webinar.company }}</span>
+    <a href="{{ path('webinar_list') }}">← Tous les webinaires</a>
+</div>
+
+<!-- Title bar -->
+<div class="title-bar">
+    <h1>📌 {{ webinar.title }}</h1>
+    <span class="participant-badge {{ isFull ? 'full' : '' }}">
+        🟢 {{ participantCount }}/{{ webinar.maxParticipants }}
+    </span>
+</div>
+
+<!-- Flash messages -->
+{% for msg in app.flashes('success') %}
+    <div class="flash-banner success">{{ msg }}</div>
+{% endfor %}
+{% for msg in app.flashes('error') %}
+    <div class="flash-banner error">{{ msg }}</div>
+{% endfor %}
+
+<!-- Main layout -->
+<div class="main-layout">
+
+    <!-- Video zone -->
+    <div class="video-zone">
+        <div class="video-placeholder">
+            <div class="icon">🎥</div>
+            <p>{{ webinar.title }}</p>
+            <small>{{ webinar.theme }} · {{ webinar.startAt }}</small>
+        </div>
+        {% if webinar.description %}
+            <p style="color:#94a3b8;font-size:0.9rem;text-align:center;max-width:500px;">
+                {{ webinar.description }}
+            </p>
+        {% endif %}
+        <a href="{{ webinar.videoLink }}" target="_blank" rel="noopener noreferrer" class="btn-join-video">
+            ▶ Rejoindre la visioconférence (Jitsi Meet)
+        </a>
+    </div>
+
+    <!-- Chat zone -->
+    <div class="chat-zone">
+        <div class="chat-header">💬 Discussion en direct</div>
+        <div class="chat-messages" id="chatMessages"></div>
+        <div class="chat-input-row">
+            <input type="text" id="chatInput" placeholder="Votre message..." autocomplete="off" />
+            <button id="chatSend">Envoyer</button>
+        </div>
+
+        <!-- Join panel -->
+        {% if not isFull %}
+            <div class="join-panel">
+                <h3>📝 S'inscrire à ce webinaire</h3>
+                <form method="post" action="{{ path('webinar_join', {id: webinar.id}) }}">
+                    <input type="text" name="name" placeholder="Votre prénom et nom" required />
+                    <input type="email" name="email" placeholder="Votre email" required />
+                    <button type="submit">🎟️ S'inscrire</button>
+                </form>
+            </div>
+        {% else %}
+            <div class="full-notice">🔴 Salle complète ({{ webinar.maxParticipants }} participants)</div>
+        {% endif %}
+    </div>
+</div>
+
+<footer>CMF — Chooze My Futur · Webinar {{ webinar.id }}</footer>
+
+<script>
+(function () {
+    const WEBINAR_ID = {{ webinar.id|json_encode }};
+    const STORAGE_KEY = 'chat_' + WEBINAR_ID;
+    const messagesEl = document.getElementById('chatMessages');
+    const inputEl    = document.getElementById('chatInput');
+    const sendBtn    = document.getElementById('chatSend');
+
+    function getUsername() {
+        let name = sessionStorage.getItem('chat_username');
+        if (!name) {
+            name = prompt('Comment souhaitez-vous vous appeler dans le chat ?') || 'Anonyme';
+            sessionStorage.setItem('chat_username', name);
+        }
+        return name;
+    }
+
+    function loadMessages() {
+        try {
+            return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        } catch (e) {
+            console.error('Failed to parse chat messages:', e);
+            return [];
+        }
+    }
+
+    function saveMessages(messages) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
+    }
+
+    function renderMessages() {
+        const messages = loadMessages();
+        messagesEl.innerHTML = '';
+        messages.forEach(function (msg) {
+            const div    = document.createElement('div');
+            div.className = 'chat-msg';
+
+            const author = document.createElement('span');
+            author.className = 'author';
+            author.appendChild(document.createTextNode(msg.author));
+
+            const text = document.createTextNode(msg.text);
+
+            const time = document.createElement('span');
+            time.className = 'time';
+            time.appendChild(document.createTextNode(msg.time));
+
+            div.appendChild(author);
+            div.appendChild(text);
+            div.appendChild(time);
+            messagesEl.appendChild(div);
+        });
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    function sendMessage() {
+        const text = inputEl.value.trim();
+        if (!text) return;
+        const username = getUsername();
+        const messages = loadMessages();
+        const now = new Date();
+        const time = now.getHours().toString().padStart(2, '0') + ':' +
+                     now.getMinutes().toString().padStart(2, '0');
+        messages.push({ author: username, text: text, time: time });
+        saveMessages(messages);
+        inputEl.value = '';
+        renderMessages();
+    }
+
+    sendBtn.addEventListener('click', sendMessage);
+    inputEl.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') sendMessage();
+    });
+
+    renderMessages();
+    setInterval(renderMessages, 3000);
+    window.addEventListener('storage', function (e) {
+        if (e.key === STORAGE_KEY) renderMessages();
+    });
+})();
+</script>
+{% endblock %}

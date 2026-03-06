@@ -1,0 +1,186 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Webinaires — CMF{% endblock %}
+
+{% block stylesheets %}
+<style>
+    :root {
+        --cmf-blue: #2563eb;
+        --cmf-dark: #1e293b;
+        --cmf-light: #f1f5f9;
+        --cmf-border: #e2e8f0;
+    }
+    body {
+        font-family: 'Segoe UI', system-ui, sans-serif;
+        background: var(--cmf-light);
+        color: var(--cmf-dark);
+        margin: 0;
+    }
+    .page-header {
+        background: var(--cmf-dark);
+        color: #fff;
+        padding: 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .page-header h1 {
+        margin: 0;
+        font-size: 1.8rem;
+    }
+    .btn-primary {
+        background: var(--cmf-blue);
+        color: #fff;
+        padding: 0.6rem 1.2rem;
+        border-radius: 6px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: background 0.2s;
+    }
+    .btn-primary:hover {
+        background: #1d4ed8;
+    }
+    .container {
+        max-width: 1200px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+    }
+    .webinar-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 1.5rem;
+    }
+    .webinar-card {
+        background: #fff;
+        border-radius: 12px;
+        border: 1px solid var(--cmf-border);
+        padding: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    .badge {
+        display: inline-block;
+        background: #dbeafe;
+        color: var(--cmf-blue);
+        font-size: 0.75rem;
+        font-weight: 700;
+        padding: 0.2rem 0.6rem;
+        border-radius: 999px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    .webinar-card h2 {
+        margin: 0;
+        font-size: 1.1rem;
+        color: var(--cmf-dark);
+    }
+    .webinar-meta {
+        font-size: 0.875rem;
+        color: #64748b;
+        display: flex;
+        flex-direction: column;
+        gap: 0.3rem;
+    }
+    .participant-bar {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+    }
+    .participant-bar .count {
+        font-weight: 700;
+        color: var(--cmf-blue);
+    }
+    .participant-bar .full {
+        color: #ef4444;
+    }
+    .progress-track {
+        flex: 1;
+        background: #e2e8f0;
+        border-radius: 999px;
+        height: 6px;
+        overflow: hidden;
+    }
+    .progress-fill {
+        height: 100%;
+        background: var(--cmf-blue);
+        border-radius: 999px;
+    }
+    .card-footer {
+        margin-top: auto;
+    }
+    .btn-card {
+        display: block;
+        text-align: center;
+        background: var(--cmf-blue);
+        color: #fff;
+        padding: 0.6rem;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: background 0.2s;
+    }
+    .btn-card:hover {
+        background: #1d4ed8;
+    }
+    .empty-state {
+        text-align: center;
+        padding: 4rem 1rem;
+        color: #64748b;
+    }
+    .empty-state h2 {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+    }
+    .empty-state p {
+        margin-bottom: 1.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<header class="page-header">
+    <h1>📡 Webinaires</h1>
+    <a href="{{ path('webinar_new') }}" class="btn-primary">➕ Créer un webinaire</a>
+</header>
+
+<div class="container">
+    {% if webinars is empty %}
+        <div class="empty-state">
+            <h2>Aucun webinaire disponible</h2>
+            <p>Soyez le premier à créer un webinaire pour votre entreprise.</p>
+            <a href="{{ path('webinar_new') }}" class="btn-primary">🚀 Créer le premier webinaire</a>
+        </div>
+    {% else %}
+        <div class="webinar-grid">
+            {% for webinar in webinars %}
+                {% set count = webinar.participants|length %}
+                {% set pct = (count / webinar.maxParticipants * 100)|round %}
+                <div class="webinar-card">
+                    <div><span class="badge">{{ webinar.theme }}</span></div>
+                    <h2>{{ webinar.title }}</h2>
+                    <div class="webinar-meta">
+                        <span>🏢 {{ webinar.company }}</span>
+                        <span>📅 {{ webinar.startAt }}</span>
+                    </div>
+                    <div class="participant-bar">
+                        <span class="{{ count >= webinar.maxParticipants ? 'full' : 'count' }}">
+                            {{ count }}/{{ webinar.maxParticipants }}
+                        </span>
+                        <div class="progress-track">
+                            <div class="progress-fill" style="width: {{ pct }}%"></div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <a href="{{ path('webinar_show', {id: webinar.id}) }}" class="btn-card">
+                            {{ count >= webinar.maxParticipants ? '🔴 Complet' : '▶ Accéder' }}
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
