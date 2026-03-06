@@ -82,33 +82,54 @@
     /* Video zone */
     .video-zone {
         background: #0f172a;
+        position: relative;
+        min-height: 500px;
+    }
+    .video-overlay {
+        position: absolute;
+        inset: 0;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
         padding: 2.5rem;
         gap: 1.5rem;
-        min-height: 400px;
+        z-index: 1;
     }
-    .video-placeholder {
+    .video-info {
         text-align: center;
         color: #94a3b8;
     }
-    .video-placeholder .icon { font-size: 4rem; margin-bottom: 0.5rem; }
-    .video-placeholder p { margin: 0 0 0.25rem; font-size: 0.95rem; }
-    .video-placeholder small { font-size: 0.8rem; color: #475569; }
-    .btn-join-video {
+    .video-info .icon { font-size: 4rem; margin-bottom: 0.5rem; }
+    .video-info p { margin: 0 0 0.25rem; font-size: 0.95rem; }
+    .video-info small { font-size: 0.8rem; color: #475569; }
+    .video-desc {
+        color: #94a3b8;
+        font-size: 0.9rem;
+        text-align: center;
+        max-width: 500px;
+        margin: 0;
+    }
+    .btn-launch {
         background: var(--cmf-blue);
         color: #fff;
         padding: 0.85rem 2rem;
         border-radius: 8px;
-        text-decoration: none;
+        border: none;
         font-weight: 700;
         font-size: 1rem;
+        cursor: pointer;
         transition: background 0.2s;
-        display: inline-block;
     }
-    .btn-join-video:hover { background: #1d4ed8; }
+    .btn-launch:hover { background: #1d4ed8; }
+    #jitsiFrame {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        border: 0;
+        display: none;
+    }
 
     /* Chat zone */
     .chat-zone {
@@ -276,20 +297,27 @@
 <div class="main-layout">
 
     <!-- Video zone -->
-    <div class="video-zone">
-        <div class="video-placeholder">
-            <div class="icon">🎥</div>
-            <p>{{ webinar.title }}</p>
-            <small>{{ webinar.theme }} · {{ webinar.startAt }}</small>
+    <div class="video-zone" id="videoZone">
+        <!-- Overlay affiché avant de rejoindre -->
+        <div class="video-overlay" id="videoOverlay">
+            <div class="video-info">
+                <div class="icon">🎥</div>
+                <p>{{ webinar.title }}</p>
+                <small>{{ webinar.theme }} · {{ webinar.startAt }}</small>
+            </div>
+            {% if webinar.description %}
+                <p class="video-desc">{{ webinar.description }}</p>
+            {% endif %}
+            <button class="btn-launch" id="launchJitsi">
+                ▶ Rejoindre la visioconférence
+            </button>
         </div>
-        {% if webinar.description %}
-            <p style="color:#94a3b8;font-size:0.9rem;text-align:center;max-width:500px;">
-                {{ webinar.description }}
-            </p>
-        {% endif %}
-        <a href="{{ webinar.videoLink }}" target="_blank" rel="noopener noreferrer" class="btn-join-video">
-            ▶ Rejoindre la visioconférence (Jitsi Meet)
-        </a>
+        <!-- Iframe Jitsi intégré (chargé au clic) -->
+        <iframe
+            id="jitsiFrame"
+            allow="camera; microphone; fullscreen; display-capture; autoplay"
+            allowfullscreen
+        ></iframe>
     </div>
 
     <!-- Chat zone -->
@@ -318,6 +346,21 @@
 </div>
 
 <footer>CMF — Chooze My Futur · Webinar {{ webinar.id }}</footer>
+
+<script>
+(function () {
+    const videoLink = {{ webinar.videoLink|json_encode }};
+    const launchBtn  = document.getElementById('launchJitsi');
+    const overlay    = document.getElementById('videoOverlay');
+    const frame      = document.getElementById('jitsiFrame');
+
+    launchBtn.addEventListener('click', function () {
+        overlay.style.display = 'none';
+        frame.src = videoLink;
+        frame.style.display = 'block';
+    });
+})();
+</script>
 
 <script>
 (function () {
