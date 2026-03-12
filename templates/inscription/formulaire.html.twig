@@ -1,0 +1,77 @@
+{# ============================================================
+   Template : Formulaire "Vos Infos" (Page 5)
+   Permet à un élève/étudiant de s'inscrire à un webinar
+   en renseignant ses informations personnelles.
+   ============================================================ #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Vos informations – ChooseMyFutur{% endblock %}
+
+{% block body %}
+
+    <div class="page-header">
+        <h1>Vos infos</h1>
+        <p class="page-subtitle">Renseignez vos informations pour vous inscrire</p>
+    </div>
+
+    {# ===== FORMULAIRE D'INSCRIPTION ===== #}
+    <div class="form-container">
+        {{ form_start(form, {'attr': {'class': 'inscription-form', 'novalidate': 'novalidate'}}) }}
+
+            {# Champ Nom #}
+            <div class="form-groupe">
+                {{ form_label(form.nom) }}
+                {{ form_widget(form.nom) }}
+                {{ form_errors(form.nom) }}
+            </div>
+
+            {# Champ Prénom #}
+            <div class="form-groupe">
+                {{ form_label(form.prenom) }}
+                {{ form_widget(form.prenom) }}
+                {{ form_errors(form.prenom) }}
+            </div>
+
+            {# Champ Email #}
+            <div class="form-groupe">
+                {{ form_label(form.email) }}
+                {{ form_widget(form.email) }}
+                {{ form_errors(form.email) }}
+            </div>
+
+            {# Champ École #}
+            <div class="form-groupe">
+                {{ form_label(form.ecole) }}
+                {{ form_widget(form.ecole) }}
+                {{ form_errors(form.ecole) }}
+            </div>
+
+            {# Champ Région (liste déroulante) #}
+            <div class="form-groupe">
+                {{ form_label(form.region) }}
+                {{ form_widget(form.region) }}
+                {{ form_errors(form.region) }}
+            </div>
+
+            {# Champ Métier recherché avec autocomplete #}
+            <div class="form-groupe">
+                {{ form_label(form.metierRecherche) }}
+                {{ form_widget(form.metierRecherche) }}
+                {# Datalist pour l'autocomplete #}
+                <datalist id="metiers-list">
+                    {% for metier in tousMetiers %}
+                        <option value="{{ metier.nom }}">{{ metier.nom }}</option>
+                    {% endfor %}
+                </datalist>
+                {{ form_errors(form.metierRecherche) }}
+            </div>
+
+            {# Bouton de validation #}
+            <div class="form-groupe form-submit">
+                {{ form_widget(form.valider) }}
+            </div>
+
+        {{ form_end(form) }}
+    </div>
+
+{% endblock %}
