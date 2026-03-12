@@ -1,0 +1,63 @@
+{# ============================================================
+   Template : Liste des Webinars
+   Affiche la grille de toutes les cards webinar avec
+   image, date, métier et lien d'inscription.
+   ============================================================ #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Liste des Webinars – ChooseMyFutur{% endblock %}
+
+{% block body %}
+
+    <div class="page-header">
+        <h1>Liste des Webinard</h1>
+    </div>
+
+    {% if webinars is empty %}
+        <p class="info-vide">Aucun webinar disponible pour le moment.</p>
+    {% else %}
+        {# Grille de cards webinar #}
+        <div class="webinars-grid webinars-grid-large">
+            {% for webinar in webinars %}
+                <div class="webinar-card">
+
+                    {# Image ou avatar silhouette #}
+                    <div class="webinar-card-image">
+                        {% if webinar.image %}
+                            <img src="{{ asset(webinar.image) }}" alt="{{ webinar.metier }}">
+                        {% else %}
+                            <div class="avatar-placeholder">👤</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="webinar-card-body">
+                        {# Date du webinar (si disponible) #}
+                        <p class="webinar-date">{{ webinar.dateDebut|date('d/m/Y à H:i') }}</p>
+
+                        {# Nom du métier en gras #}
+                        <h3 class="webinar-metier"><strong>{{ webinar.metier }}</strong></h3>
+
+                        {# Titre du webinar #}
+                        <p class="webinar-titre-small">{{ webinar.titre }}</p>
+
+                        {# Description courte si disponible #}
+                        {% if webinar.description %}
+                            <p class="webinar-desc">{{ webinar.description|slice(0, 100) }}{% if webinar.description|length > 100 %}...{% endif %}</p>
+                        {% endif %}
+
+                        {# Liens : voir le webinar + s'inscrire si à venir #}
+                        <div class="card-actions">
+                            <a href="{{ path('app_webinar_voir', {'id': webinar.id}) }}" class="btn-secondary">Voir</a>
+                            {% if webinar.dateDebut > date() %}
+                                {# Lien "S'inscrire" uniquement pour les webinars à venir #}
+                                <a href="{{ path('app_inscription', {'webinar': webinar.id}) }}" class="btn-primary">S'inscrire</a>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+{% endblock %}

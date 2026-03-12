@@ -1,0 +1,107 @@
+{# ============================================================
+   Template : Voir un Webinar
+   Affiche le lecteur vidéo à gauche et la zone de discussion
+   (commentaires + formulaire) à droite.
+   ============================================================ #}
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ webinar.titre }} – ChooseMyFutur{% endblock %}
+
+{% block body %}
+
+    {# ===== EN-TÊTE DU WEBINAR ===== #}
+    <div class="webinar-header">
+        <h1>{{ webinar.titre }}</h1>
+        <p class="webinar-metier-tag">Métier : <strong>{{ webinar.metier }}</strong></p>
+        <p class="webinar-date-tag">📅 {{ webinar.dateDebut|date('d/m/Y à H:i') }}</p>
+        {% if webinar.description %}
+            <p class="webinar-description">{{ webinar.description }}</p>
+        {% endif %}
+    </div>
+
+    {# ===== CONTENU PRINCIPAL : VIDÉO + DISCUSSION ===== #}
+    <div class="webinar-content">
+
+        {# --- COLONNE GAUCHE : lecteur vidéo --- #}
+        <div class="webinar-video-col">
+            <div class="video-container">
+                {% if webinar.videoUrl %}
+                    {# Lecteur vidéo : gère les URL YouTube/Vimeo ou fichiers vidéo directs #}
+                    {% if 'youtube.com' in webinar.videoUrl or 'youtu.be' in webinar.videoUrl %}
+                        {# Embed YouTube #}
+                        <iframe
+                            src="{{ webinar.videoUrl }}"
+                            frameborder="0"
+                            allowfullscreen
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            title="{{ webinar.titre }}"
+                        ></iframe>
+                    {% elseif 'vimeo.com' in webinar.videoUrl %}
+                        {# Embed Vimeo #}
+                        <iframe
+                            src="{{ webinar.videoUrl }}"
+                            frameborder="0"
+                            allowfullscreen
+                            title="{{ webinar.titre }}"
+                        ></iframe>
+                    {% else %}
+                        {# Lecteur vidéo HTML5 natif #}
+                        <video controls>
+                            <source src="{{ webinar.videoUrl }}">
+                            Votre navigateur ne supporte pas la lecture vidéo.
+                        </video>
+                    {% endif %}
+                {% else %}
+                    {# Aucune vidéo disponible : affiche un placeholder #}
+                    <div class="video-placeholder">
+                        <span class="play-icon">▶</span>
+                        <p>Vidéo à venir</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            {# Bouton d'inscription au webinar si c'est un webinar à venir #}
+            {% if webinar.dateDebut > date() %}
+                <div class="inscription-cta">
+                    <a href="{{ path('app_inscription', {'webinar': webinar.id}) }}" class="btn-primary">
+                        S'inscrire à ce webinar
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+
+        {# --- COLONNE DROITE : zone de discussion --- #}
+        <div class="webinar-discussion-col">
+            <h2 class="discussion-titre">Zone de discution</h2>
+
+            {# Liste des commentaires existants #}
+            <div class="commentaires-liste">
+                {% if webinar.commentaires is empty %}
+                    <p class="info-vide">Soyez le premier à commenter !</p>
+                {% else %}
+                    {% for commentaire in webinar.commentaires %}
+                        <div class="commentaire">
+                            <div class="commentaire-header">
+                                <strong class="commentaire-auteur">{{ commentaire.auteur }}</strong>
+                                <span class="commentaire-date">{{ commentaire.createdAt|date('d/m à H:i') }}</span>
+                            </div>
+                            <p class="commentaire-contenu">{{ commentaire.contenu }}</p>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            {# Formulaire de nouveau commentaire #}
+            <div class="commentaire-form-wrapper">
+                <h3>Laisser un message</h3>
+                {{ form_start(formCommentaire) }}
+                    {{ form_row(formCommentaire.auteur) }}
+                    {{ form_row(formCommentaire.contenu) }}
+                    {{ form_widget(formCommentaire.envoyer) }}
+                {{ form_end(formCommentaire) }}
+            </div>
+        </div>
+
+    </div>
+
+{% endblock %}

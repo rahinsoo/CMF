@@ -1,0 +1,88 @@
+{# ============================================================
+   Template : Recherche de métier
+   Affiche le formulaire de recherche avec autocomplete,
+   la liste des résultats de métiers/webinars et un bouton valider.
+   ============================================================ #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Recherche de métier – ChooseMyFutur{% endblock %}
+
+{% block body %}
+
+    <div class="page-header">
+        <h1>Vers quel métier ?</h1>
+        <p class="page-subtitle">Trouvez les webinars correspondant à votre futur métier</p>
+    </div>
+
+    {# ===== FORMULAIRE DE RECHERCHE ===== #}
+    <div class="recherche-container">
+        {{ form_start(form, {'attr': {'class': 'search-form'}}) }}
+            {{ form_widget(form.terme) }}
+            {# Datalist pour l'autocomplete HTML natif #}
+            <datalist id="metiers-list">
+                {% for metier in tousMetiers %}
+                    <option value="{{ metier.nom }}">{{ metier.nom }}</option>
+                {% endfor %}
+            </datalist>
+            {{ form_widget(form.rechercher) }}
+        {{ form_end(form) }}
+    </div>
+
+    {# ===== RÉSULTATS DE RECHERCHE ===== #}
+    {% if terme %}
+        <div class="resultats-section">
+            <h2>Résultats pour « {{ terme }} »</h2>
+
+            {% if resultats is empty %}
+                <p class="info-vide">Aucun webinar trouvé pour ce métier. Essayez un autre terme.</p>
+            {% else %}
+                {# Liste des résultats avec cases à cocher pour sélectionner #}
+                <form action="{{ path('app_inscription') }}" method="GET" class="resultats-form">
+                    <ul class="resultats-liste">
+                        {% for webinar in resultats %}
+                            <li class="resultat-item">
+                                {# Case à cocher pour sélectionner ce webinar #}
+                                <label class="resultat-label">
+                                    <input
+                                        type="radio"
+                                        name="webinar"
+                                        value="{{ webinar.id }}"
+                                        class="resultat-radio"
+                                    >
+                                    <span class="resultat-info">
+                                        <strong class="resultat-metier">{{ webinar.metier }}</strong>
+                                        <span class="resultat-titre">{{ webinar.titre }}</span>
+                                        <span class="resultat-date">{{ webinar.dateDebut|date('d/m/Y') }}</span>
+                                    </span>
+                                </label>
+                                {# Lien direct vers le webinar #}
+                                <a href="{{ path('app_webinar_voir', {'id': webinar.id}) }}" class="btn-secondary">Voir</a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+
+                    {# Bouton valider : envoie vers le formulaire d'inscription #}
+                    <button type="submit" class="btn-primary btn-valider">Valider</button>
+                </form>
+            {% endif %}
+        </div>
+    {% else %}
+        {# Affiche tous les métiers disponibles quand pas encore de recherche #}
+        <div class="tous-metiers">
+            <h2>Tous les métiers disponibles</h2>
+            <ul class="metiers-liste">
+                {% for metier in tousMetiers %}
+                    <li class="metier-item">
+                        <a href="{{ path('app_webinar_recherche', {'terme': metier.nom}) }}" class="metier-lien">
+                            {{ metier.nom }}
+                            {% if metier.secteur %}
+                                <span class="metier-secteur">– {{ metier.secteur }}</span>
+                            {% endif %}
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+{% endblock %}

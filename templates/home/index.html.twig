@@ -1,0 +1,103 @@
+{# ============================================================
+   Template : Page d'accueil (index)
+   Affiche la barre de recherche, les prochains webinars,
+   et les blocs CTA pour enseignants et professionnels.
+   ============================================================ #}
+{% extends 'base.html.twig' %}
+
+{% block title %}ChooseMyFutur – Découvrez vos futurs métiers{% endblock %}
+
+{% block body %}
+
+    {# ===== SECTION HERO : barre de recherche principale ===== #}
+    <section class="hero">
+        <h1 class="hero-titre">Sur quel métier voulez-vous en savoir plus ?</h1>
+
+        {# Formulaire de recherche avec autocomplete #}
+        <div class="search-container">
+            {{ form_start(form, {'attr': {'class': 'search-form'}}) }}
+                {# Champ de recherche avec datalist pour l'autocomplete #}
+                {{ form_widget(form.terme) }}
+                {# Datalist pour l'autocomplete HTML natif #}
+                <datalist id="metiers-list">
+                    {% for metier in tousMetiers %}
+                        <option value="{{ metier.nom }}">{{ metier.nom }}</option>
+                    {% endfor %}
+                </datalist>
+                {{ form_widget(form.rechercher) }}
+            {{ form_end(form) }}
+        </div>
+    </section>
+
+    {# ===== BANDEAU PARTENAIRES (carousel simulé) ===== #}
+    <section class="partenaires">
+        <div class="partenaires-track">
+            {# Logos partenaires répétés pour l'effet défilant #}
+            {% set partenaires = ['Entreprise A', 'Partenaire B', 'Organisation C', 'Institut D', 'Groupe E', 'Réseau F'] %}
+            {% for p in partenaires %}
+                <span class="partenaire-logo">{{ p }}</span>
+            {% endfor %}
+            {# Deuxième passage pour l'animation infinie #}
+            {% for p in partenaires %}
+                <span class="partenaire-logo">{{ p }}</span>
+            {% endfor %}
+        </div>
+    </section>
+
+    {# ===== SECTION PROCHAINS WEBINARS ===== #}
+    <section class="section-webinars">
+        <h2 class="section-titre">Les prochains Webinars</h2>
+
+        {% if prochainsWebinars is empty %}
+            <p class="info-vide">Aucun webinar à venir pour le moment. Revenez bientôt !</p>
+        {% else %}
+            <div class="webinars-grid">
+                {% for webinar in prochainsWebinars %}
+                    {# Carte d'un webinar #}
+                    <a href="{{ path('app_webinar_voir', {'id': webinar.id}) }}" class="webinar-card">
+                        {# Image ou icône par défaut #}
+                        <div class="webinar-card-image">
+                            {% if webinar.image %}
+                                <img src="{{ asset(webinar.image) }}" alt="{{ webinar.metier }}">
+                            {% else %}
+                                {# Icône silhouette par défaut #}
+                                <div class="avatar-placeholder">👤</div>
+                            {% endif %}
+                        </div>
+                        <div class="webinar-card-body">
+                            {# Date du webinar #}
+                            <p class="webinar-date">{{ webinar.dateDebut|date('d/m/Y à H:i') }}</p>
+                            {# Nom du métier en gras #}
+                            <h3 class="webinar-metier">{{ webinar.metier }}</h3>
+                            <p class="webinar-titre-small">{{ webinar.titre }}</p>
+                        </div>
+                    </a>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {# Lien vers la liste complète #}
+        <div class="voir-tous">
+            <a href="{{ path('app_webinar_liste') }}" class="btn-secondary">Voir tous les webinars</a>
+        </div>
+    </section>
+
+    {# ===== BLOCS CTA EN BAS DE PAGE ===== #}
+    <div class="cta-grid">
+        {# Bloc pour les enseignants #}
+        <div class="cta-bloc cta-enseignant">
+            <p>
+                Vous êtes enseignant ou directeur d'établissement ?
+                <strong>Faites découvrir à vos jeunes de façon exclusive leurs futurs métiers !</strong>
+            </p>
+            <a href="{{ path('app_inscription') }}" class="btn-primary">Je m'inscris</a>
+        </div>
+
+        {# Bloc pour les professionnels #}
+        <div class="cta-bloc cta-professionnel">
+            <p><strong>Envie de faire connaitre vos métiers ?</strong></p>
+            <a href="{{ path('app_inscription') }}" class="btn-primary">Proposer un webinar</a>
+        </div>
+    </div>
+
+{% endblock %}
