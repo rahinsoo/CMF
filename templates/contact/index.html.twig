@@ -1,0 +1,22 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Contact{% endblock %}
+
+{% block body %}
+<div style="padding: 20px; max-width: 600px;">
+    <h1>Formulaire de contact</h1>
+
+    {# Afficher le formulaire avec la fonction form() #}
+    {{ form_start(contactForm) }}
+
+        {# form_row() affiche le label, le champ et les erreurs #}
+        {{ form_row(contactForm.nom) }}
+        {{ form_row(contactForm.email) }}
+        {{ form_row(contactForm.message) }}
+
+        {# Bouton de soumission #}
+        {{ form_row(contactForm.envoyer, {'attr': {'class': 'btn btn-primary'}}) }}
+
+    {{ form_end(contactForm) }}
+</div>
+{% endblock %}
