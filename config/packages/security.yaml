@@ -5,7 +5,18 @@ security:
 
     # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
     providers:
-        users_in_memory: { memory: null }
+        # used to reload user from session & other features (e.g. switch_user)
+        app_user_provider:
+            entity:
+                class: App\Entity\Admin
+                property: username
+        # used to reload user from session & other features (e.g. switch_user)
+
+    # Role hierarchy: ROLE_SUPER_ADMIN inherits ROLE_ADMIN and ROLE_USER,
+    # ROLE_ADMIN inherits ROLE_USER.
+    role_hierarchy:
+        ROLE_SUPER_ADMIN: [ROLE_ADMIN, ROLE_USER]
+        ROLE_ADMIN:       [ROLE_USER]
 
     firewalls:
         dev:
@@ -14,7 +25,7 @@ security:
             security: false
         main:
             lazy: true
-            provider: users_in_memory
+            provider: app_user_provider
 
             # Activate different ways to authenticate:
             # https://symfony.com/doc/current/security.html#the-firewall
@@ -24,8 +35,9 @@ security:
 
     # Note: Only the *first* matching rule is applied
     access_control:
-        # - { path: ^/admin, roles: ROLE_ADMIN }
-        # - { path: ^/profile, roles: ROLE_USER }
+        - { path: ^/super-admin, roles: ROLE_SUPER_ADMIN }
+        - { path: ^/admin,       roles: ROLE_ADMIN }
+        - { path: ^/webinar,     roles: ROLE_USER }
 
 when@test:
     security:

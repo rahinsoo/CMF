@@ -29,6 +29,7 @@ if [ ! -f "composer.json" ]; then
     # "webapp" est un meta-package Symfony qui installe les dépendances
     # classiques d'une application web complète.
     docker-compose exec php composer require webapp # --no-interaction
+    docker-compose exec php composer require easycorp/easyadmin-bundle
 else
 
     echo ">>> composer.json détecté, le projet Symfony existe déjà."

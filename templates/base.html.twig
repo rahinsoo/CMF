@@ -12,6 +12,22 @@
         {% endblock %}
     </head>
     <body>
+        {# Menu de navigation global #}
+        <nav style="background: #333; padding: 10px;">
+            <a href="{{ path('app_home') }}" style="color: white; margin-right: 15px;">Accueil</a>
+            <a href="{{ path('app_about') }}" style="color: white; margin-right: 15px;">À propos</a>
+            <a href="{{ path('app_contact') }}" style="color: white;">Contact</a>
+        </nav>
+
+        {# Afficher les messages flash (succès, erreur, etc.) #}
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div style="padding: 10px; margin: 10px; background: {% if label == 'success' %}#4CAF50{% else %}#f44336{% endif %}; color: white;">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endfor %}
+
         {% block body %}{% endblock %}
     </body>
 </html>
