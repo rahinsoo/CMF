@@ -26,3 +26,29 @@ Utilise les fichier joint base_webinar.md et Desktop - Proto Wevinar.png comme b
 
 ## test sans bdd du mode webinar
 -> echec pour le moment 2026-03-10
+
+---
+
+## Rôles applicatifs
+
+Le système définit trois rôles dans `config/packages/security.yaml` avec la hiérarchie suivante :
+
+```
+ROLE_SUPER_ADMIN
+  └─ ROLE_ADMIN
+       └─ ROLE_USER
+```
+
+| Rôle               | Hérite de                   | Responsabilités                                                                                      |
+|--------------------|-----------------------------|------------------------------------------------------------------------------------------------------|
+| `ROLE_SUPER_ADMIN` | `ROLE_ADMIN`, `ROLE_USER`   | Administre tout le système. Peut créer des administrateurs.                                          |
+| `ROLE_ADMIN`       | `ROLE_USER`                 | Administre la création des entreprises et des webinars. Peut créer des utilisateurs.                 |
+| `ROLE_USER`        | *(rôle de base)*            | Peut créer et lancer des webinars, gérer les discussions et quitter un webinar.                      |
+
+### Accès protégés (access_control)
+
+| Chemin URL     | Rôle minimum requis |
+|----------------|---------------------|
+| `/super-admin` | `ROLE_SUPER_ADMIN`  |
+| `/admin`       | `ROLE_ADMIN`        |
+| `/webinar`     | `ROLE_USER`         |
