@@ -1,33 +1,59 @@
+{# ============================================================
+   Template de base : layout principal du site ChooseMyFutur.
+   Contient le header avec le logo et le lien de connexion,
+   ainsi que le footer commun à toutes les pages.
+   ============================================================ #}
 <!DOCTYPE html>
-<html>
+<html lang="fr">
     <head>
         <meta charset="UTF-8">
-        <title>{% block title %}Welcome!{% endblock %}</title>
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
-        {% block stylesheets %}
-        {% endblock %}
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{% block title %}ChooseMyFutur{% endblock %}</title>
+        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>🎯</text></svg>">
+        {# Le CSS est chargé via importmap (assets/app.js importe assets/styles/app.css) #}
+        {% block stylesheets %}{% endblock %}
 
         {% block javascripts %}
             {% block importmap %}{{ importmap('app') }}{% endblock %}
         {% endblock %}
     </head>
     <body>
-        {# Menu de navigation global #}
-        <nav style="background: #333; padding: 10px;">
-            <a href="{{ path('app_home') }}" style="color: white; margin-right: 15px;">Accueil</a>
-            <a href="{{ path('app_about') }}" style="color: white; margin-right: 15px;">À propos</a>
-            <a href="{{ path('app_contact') }}" style="color: white;">Contact</a>
-        </nav>
 
-        {# Afficher les messages flash (succès, erreur, etc.) #}
-        {% for label, messages in app.flashes %}
+        {# ===== HEADER : logo + navigation ===== #}
+        <header class="site-header">
+            <div class="header-inner">
+                {# Logo "choosemyfutur" : "choosemy" en couleur orange, "futur" en blanc #}
+                <a href="{{ path('app_main') }}" class="logo">
+                    <span class="logo-choosemy">choose</span><span class="logo-futur">myfutur</span>
+                </a>
+
+                {# Navigation : lien vers la liste des webinars et connexion #}
+                <nav class="header-nav">
+                    <a href="{{ path('app_home') }}" class="nav-link">home</a>
+                    <a href="{{ path('app_about') }}" class="nav-link">about</a>
+                    <a href="" class="nav-link btn-connexion">connexion</a>
+                </nav>
+            </div>
+        </header>
+
+        {# ===== MESSAGES FLASH (notifications) ===== #}
+        {% for type, messages in app.flashes %}
             {% for message in messages %}
-                <div style="padding: 10px; margin: 10px; background: {% if label == 'success' %}#4CAF50{% else %}#f44336{% endif %}; color: white;">
+                <div class="flash flash-{{ type }}">
                     {{ message }}
                 </div>
             {% endfor %}
         {% endfor %}
 
-        {% block body %}{% endblock %}
+        {# ===== CONTENU PRINCIPAL ===== #}
+        <main class="site-main">
+            {% block body %}{% endblock %}
+        </main>
+
+        {# ===== FOOTER ===== #}
+        <footer class="site-footer">
+            <p>choosemyfutur 2026</p>
+        </footer>
+
     </body>
 </html>

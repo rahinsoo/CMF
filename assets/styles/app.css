@@ -1,3 +1,871 @@
+/* ============================================================
+   Feuille de style principale – ChooseMyFutur
+   Style simple et épuré, fidèle aux maquettes wireframe.
+   Couleur principale : orange #e8a020
+   ============================================================ */
+
+/* ===== VARIABLES CSS ===== */
+:root {
+    --couleur-principale: #e8a020; /* Orange principal (logo "futur") */
+    --couleur-texte: #222222; /* Texte sombre */
+    --couleur-fond: #ffffff; /* Fond blanc */
+    --couleur-fond-clair: #f8f8f8; /* Fond légèrement grisé */
+    --couleur-bordure: #dddddd; /* Bordure grise claire */
+    --couleur-succes: #28a745; /* Vert pour les messages de succès */
+    --bordure-rayon: 8px; /* Rayon des coins arrondis */
+    --ombre: 0 2px 8px rgba(0, 0, 0, 0.08); /* Ombre légère */
+    --font-principale: "Segoe UI", Arial, sans-serif;
+}
+
+/* ===== RESET DE BASE ===== */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
 body {
-    background-color: skyblue;
+    font-family: var(--font-principale);
+    color: var(--couleur-texte);
+    background-color: var(--couleur-fond);
+    line-height: 1.6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+a {
+    color: var(--couleur-principale);
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* ===== HEADER ===== */
+.site-header {
+    background-color: #1a1a2e;
+    padding: 0 2rem;
+    height: 60px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.header-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* Logo : "futur" en orange, "choosemy" en blanc */
+.logo {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    text-decoration: none;
+}
+
+.logo-choosemy {
+    color: #ffffff;
+}
+
+.logo-futur {
+    color: var(--couleur-principale);
+}
+
+/* Navigation du header */
+.header-nav {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.nav-link {
+    color: #cccccc;
+    font-size: 0.95rem;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.nav-link:hover {
+    color: #ffffff;
+    text-decoration: none;
+}
+
+/* Bouton "Se connecter" dans le header */
+.btn-connexion {
+    background-color: var(--couleur-principale);
+    color: #ffffff !important;
+    padding: 0.4rem 1rem;
+    border-radius: var(--bordure-rayon);
+    font-weight: 600;
+    transition: background-color 0.2s;
+}
+
+.btn-connexion:hover {
+    background-color: #d4911a;
+    text-decoration: none;
+}
+
+/* ===== MAIN ===== */
+.site-main {
+    flex: 1;
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+/* ===== FOOTER ===== */
+.site-footer {
+    background-color: #1a1a2e;
+    color: #aaaaaa;
+    text-align: center;
+    padding: 1rem;
+    font-size: 0.85rem;
+}
+
+/* ===== MESSAGES FLASH ===== */
+.flash {
+    max-width: 1200px;
+    margin: 1rem auto 0;
+    padding: 0.75rem 1rem;
+    border-radius: var(--bordure-rayon);
+    font-weight: 500;
+}
+
+.flash-success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.flash-error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* ===== BOUTONS ===== */
+.btn-primary {
+    display: inline-block;
+    background-color: var(--couleur-principale);
+    color: #ffffff;
+    padding: 0.6rem 1.4rem;
+    border: none;
+    border-radius: var(--bordure-rayon);
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 0.2s;
+}
+
+.btn-primary:hover {
+    background-color: #d4911a;
+    text-decoration: none;
+    color: #ffffff;
+}
+
+.btn-secondary {
+    display: inline-block;
+    background-color: transparent;
+    color: var(--couleur-principale);
+    padding: 0.5rem 1.2rem;
+    border: 2px solid var(--couleur-principale);
+    border-radius: var(--bordure-rayon);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+    background-color: var(--couleur-principale);
+    color: #ffffff;
+    text-decoration: none;
+}
+
+/* ===== PAGE HEADER (titre de page) ===== */
+.page-header {
+    margin-bottom: 2rem;
+    border-bottom: 2px solid var(--couleur-principale);
+    padding-bottom: 1rem;
+}
+
+.page-header h1 {
+    font-size: 1.8rem;
+    color: var(--couleur-texte);
+}
+
+.page-subtitle {
+    color: #666666;
+    margin-top: 0.25rem;
+}
+
+/* ===== SECTION HERO (page d'accueil) ===== */
+.hero {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: #ffffff;
+    text-align: center;
+    padding: 3rem 2rem;
+    margin: -2rem -1rem 2rem;
+    border-radius: 0 0 var(--bordure-rayon) var(--bordure-rayon);
+}
+
+.hero-titre {
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    color: #ffffff;
+}
+
+/* ===== BARRE DE RECHERCHE ===== */
+.search-container {
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.search-form {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.search-input {
+    flex: 1;
+    padding: 0.8rem 1.2rem;
+    border: 2px solid transparent;
+    border-radius: 50px;
+    font-size: 1rem;
+    outline: none;
+    background-color: rgba(255, 255, 255, 0.95);
+    transition: border-color 0.2s;
+}
+
+.search-input:focus {
+    border-color: var(--couleur-principale);
+}
+
+.btn-search {
+    padding: 0.8rem 1.5rem;
+    background-color: var(--couleur-principale);
+    color: #ffffff;
+    border: none;
+    border-radius: 50px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background-color 0.2s;
+}
+
+.btn-search:hover {
+    background-color: #d4911a;
+}
+
+/* ===== BANDEAU PARTENAIRES ===== */
+.partenaires {
+    overflow: hidden;
+    background-color: var(--couleur-fond-clair);
+    padding: 1rem 0;
+    margin: 0 -1rem 2rem;
+    border-top: 1px solid var(--couleur-bordure);
+    border-bottom: 1px solid var(--couleur-bordure);
+}
+
+.partenaires-track {
+    display: flex;
+    gap: 3rem;
+    animation: defilement 20s linear infinite;
+    white-space: nowrap;
+}
+
+@keyframes defilement {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+.partenaire-logo {
+    font-weight: 600;
+    color: #888888;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* ===== GRILLE DE WEBINARS ===== */
+.section-webinars {
+    margin-bottom: 3rem;
+}
+
+.section-titre {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    color: var(--couleur-texte);
+    border-left: 4px solid var(--couleur-principale);
+    padding-left: 0.75rem;
+}
+
+.webinars-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.webinars-grid-large {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+
+/* Card webinar */
+.webinar-card {
+    background-color: var(--couleur-fond);
+    border: 1px solid var(--couleur-bordure);
+    border-radius: var(--bordure-rayon);
+    overflow: hidden;
+    box-shadow: var(--ombre);
+    text-decoration: none;
+    color: var(--couleur-texte);
+    display: flex;
+    flex-direction: column;
+    transition:
+        box-shadow 0.2s,
+        transform 0.2s;
+}
+
+.webinar-card:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+    text-decoration: none;
+}
+
+.webinar-card-image {
+    height: 140px;
+    background-color: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.webinar-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatar-placeholder {
+    font-size: 3.5rem;
+    color: #cccccc;
+}
+
+.webinar-card-body {
+    padding: 1rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.webinar-date {
+    font-size: 0.8rem;
+    color: #888888;
+}
+
+.webinar-metier {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--couleur-texte);
+}
+
+.webinar-titre-small {
+    font-size: 0.85rem;
+    color: #555555;
+}
+
+.webinar-desc {
+    font-size: 0.82rem;
+    color: #777777;
+    margin-top: 0.25rem;
+}
+
+/* Actions dans la card */
+.card-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: auto;
+    padding-top: 0.75rem;
+}
+
+/* Lien "Voir tous" */
+.voir-tous {
+    text-align: center;
+    margin-top: 1rem;
+}
+
+/* ===== BLOCS CTA (bas de la page d'accueil) ===== */
+.cta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.cta-bloc {
+    background-color: var(--couleur-fond-clair);
+    border: 1px solid var(--couleur-bordure);
+    border-radius: var(--bordure-rayon);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+}
+
+.cta-enseignant {
+    border-left: 4px solid #4a90d9;
+}
+
+.cta-professionnel {
+    border-left: 4px solid var(--couleur-principale);
+}
+
+/* ===== PAGE WEBINAR (voir un webinar) ===== */
+.webinar-header {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--couleur-principale);
+}
+
+.webinar-header h1 {
+    font-size: 1.6rem;
+    margin-bottom: 0.5rem;
+}
+
+.webinar-metier-tag,
+.webinar-date-tag {
+    font-size: 0.9rem;
+    color: #666666;
+    margin-top: 0.25rem;
+}
+
+.webinar-description {
+    margin-top: 0.75rem;
+    color: #444444;
+}
+
+/* Disposition vidéo + discussion en deux colonnes */
+.webinar-content {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+    align-items: start;
+}
+
+/* Lecteur vidéo */
+.video-container {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background-color: #111111;
+    border-radius: var(--bordure-rayon);
+    overflow: hidden;
+    position: relative;
+}
+
+.video-container video,
+.video-container iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+.video-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #aaaaaa;
+    gap: 1rem;
+}
+
+.play-icon {
+    font-size: 4rem;
+    color: var(--couleur-principale);
+}
+
+/* Bouton d'inscription sous la vidéo */
+.inscription-cta {
+    margin-top: 1rem;
+    text-align: center;
+}
+
+/* Zone de discussion */
+.webinar-discussion-col {
+    background-color: var(--couleur-fond-clair);
+    border: 1px solid var(--couleur-bordure);
+    border-radius: var(--bordure-rayon);
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-height: 400px;
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.discussion-titre {
+    font-size: 1.1rem;
+    font-weight: 700;
+    border-bottom: 1px solid var(--couleur-bordure);
+    padding-bottom: 0.5rem;
+}
+
+/* Liste des commentaires */
+.commentaires-liste {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.commentaire {
+    background-color: var(--couleur-fond);
+    border: 1px solid var(--couleur-bordure);
+    border-radius: var(--bordure-rayon);
+    padding: 0.75rem;
+}
+
+.commentaire-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.25rem;
+}
+
+.commentaire-auteur {
+    color: var(--couleur-principale);
+    font-size: 0.9rem;
+}
+
+.commentaire-date {
+    font-size: 0.75rem;
+    color: #aaaaaa;
+}
+
+.commentaire-contenu {
+    font-size: 0.9rem;
+    color: #444444;
+}
+
+/* Formulaire de commentaire */
+.commentaire-form-wrapper {
+    border-top: 1px solid var(--couleur-bordure);
+    padding-top: 1rem;
+}
+
+.commentaire-form-wrapper h3 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    color: #666666;
+}
+
+/* ===== PAGE RECHERCHE ===== */
+.recherche-container {
+    max-width: 700px;
+    margin: 0 auto 2rem;
+}
+
+.resultats-section {
+    margin-top: 1rem;
+}
+
+.resultats-section h2 {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+    color: #666666;
+}
+
+.resultats-liste {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.resultat-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: var(--couleur-fond);
+    border: 1px solid var(--couleur-bordure);
+    border-radius: var(--bordure-rayon);
+    padding: 0.75rem 1rem;
+    box-shadow: var(--ombre);
+}
+
+.resultat-label {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+    flex: 1;
+}
+
+.resultat-radio {
+    accent-color: var(--couleur-principale);
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.resultat-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.resultat-metier {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--couleur-texte);
+}
+
+.resultat-titre {
+    font-size: 0.85rem;
+    color: #555555;
+}
+
+.resultat-date {
+    font-size: 0.8rem;
+    color: #888888;
+}
+
+.btn-valider {
+    margin-top: 0.5rem;
+}
+
+/* Tous les métiers disponibles */
+.tous-metiers h2 {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+}
+
+.metiers-liste {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.5rem;
+}
+
+.metier-item {
+    background-color: var(--couleur-fond-clair);
+    border: 1px solid var(--couleur-bordure);
+    border-radius: var(--bordure-rayon);
+    padding: 0.6rem 0.9rem;
+    transition: background-color 0.2s;
+}
+
+.metier-item:hover {
+    background-color: #fff3e0;
+    border-color: var(--couleur-principale);
+}
+
+.metier-lien {
+    color: var(--couleur-texte);
+    text-decoration: none;
+    font-size: 0.9rem;
+    display: block;
+}
+
+.metier-secteur {
+    color: #888888;
+    font-size: 0.8rem;
+}
+
+/* ===== FORMULAIRE D'INSCRIPTION ===== */
+.form-container {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.inscription-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.form-groupe {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    margin-bottom: 1.25rem;
+}
+
+.form-groupe label {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #444444;
+}
+
+.form-input,
+input[type="text"],
+input[type="email"],
+input[type="search"] {
+    width: 100%;
+    padding: 0.65rem 0.9rem;
+    border: 1px solid var(--couleur-bordure);
+    border-radius: var(--bordure-rayon);
+    font-size: 0.95rem;
+    font-family: var(--font-principale);
+    background-color: var(--couleur-fond);
+    color: var(--couleur-texte);
+    transition: border-color 0.2s;
+    outline: none;
+}
+
+.form-input:focus,
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="search"]:focus {
+    border-color: var(--couleur-principale);
+    box-shadow: 0 0 0 3px rgba(232, 160, 32, 0.12);
+}
+
+.form-select,
+select {
+    width: 100%;
+    padding: 0.65rem 0.9rem;
+    border: 1px solid var(--couleur-bordure);
+    border-radius: var(--bordure-rayon);
+    font-size: 0.95rem;
+    font-family: var(--font-principale);
+    background-color: var(--couleur-fond);
+    color: var(--couleur-texte);
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.form-select:focus,
+select:focus {
+    border-color: var(--couleur-principale);
+}
+
+.form-textarea,
+textarea {
+    width: 100%;
+    padding: 0.65rem 0.9rem;
+    border: 1px solid var(--couleur-bordure);
+    border-radius: var(--bordure-rayon);
+    font-size: 0.9rem;
+    font-family: var(--font-principale);
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.form-textarea:focus,
+textarea:focus {
+    border-color: var(--couleur-principale);
+    box-shadow: 0 0 0 3px rgba(232, 160, 32, 0.12);
+}
+
+.form-submit {
+    margin-top: 0.5rem;
+}
+
+/* Bouton submit global */
+button[type="submit"],
+input[type="submit"] {
+    background-color: var(--couleur-principale);
+    color: #ffffff;
+    padding: 0.65rem 1.5rem;
+    border: none;
+    border-radius: var(--bordure-rayon);
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: var(--font-principale);
+    transition: background-color 0.2s;
+}
+
+button[type="submit"]:hover,
+input[type="submit"]:hover {
+    background-color: #d4911a;
+}
+
+/* Messages d'erreur de formulaire */
+.form-error,
+ul.form-error li {
+    color: #e53935;
+    font-size: 0.8rem;
+    margin-top: 0.2rem;
+    list-style: none;
+    padding: 0;
+}
+
+/* ===== UTILITAIRES ===== */
+.info-vide {
+    color: #888888;
+    font-style: italic;
+    padding: 1.5rem;
+    text-align: center;
+    background-color: var(--couleur-fond-clair);
+    border-radius: var(--bordure-rayon);
+    border: 1px dashed var(--couleur-bordure);
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .hero {
+        padding: 2rem 1rem;
+    }
+
+    .hero-titre {
+        font-size: 1.2rem;
+    }
+
+    .search-form {
+        flex-direction: column;
+    }
+
+    .cta-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .webinar-content {
+        grid-template-columns: 1fr;
+    }
+
+    .webinars-grid,
+    .webinars-grid-large {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    }
+
+    .site-header {
+        padding: 0 1rem;
+    }
+
+    .header-nav {
+        gap: 0.75rem;
+    }
 }
