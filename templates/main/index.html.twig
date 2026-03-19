@@ -1,0 +1,59 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}ChooseMyFutur – Découvrez vos futurs métiers{% endblock %}
+
+{% block body %}
+    {# ===== SECTION HERO : barre de recherche principale ===== #}
+        <section class="hero">
+        <h1 class="hero-titre">Sur quel métier voulez-vous en savoir plus ?</h1>
+
+        {# Formulaire de recherche avec autocomplete #}
+        <div class="search-container">
+
+        </div>
+    </section>
+ {# ===== BANDEAU PARTENAIRES (carousel simulé) ===== #}
+    <section class="partenaires">
+        <div class="partenaires-track">
+            {# Logos partenaires répétés pour l'effet défilant #}
+            {% set partenaires = ['Entreprise A', 'Partenaire B', 'Organisation C', 'Institut D', 'Groupe E', 'Réseau F'] %}
+            {% for p in partenaires %}
+                <span class="partenaire-logo">{{ p }}</span>
+            {% endfor %}
+            {# Deuxième passage pour l'animation infinie #}
+            {% for p in partenaires %}
+                <span class="partenaire-logo">{{ p }}</span>
+            {% endfor %}
+        </div>
+    </section>
+
+        {# ===== SECTION PROCHAINS WEBINARS ===== #}
+    <section class="section-webinars">
+        <h2 class="section-titre">Les prochains Webinars</h2>
+
+            <p class="info-vide">Aucun webinar à venir pour le moment. Revenez bientôt !</p>
+
+        {# Lien vers la liste complète #}
+        <div class="voir-tous">
+            <a href="" class="btn-secondary">Voir tous les webinars</a>
+        </div>
+    </section>
+
+    {# ===== BLOCS CTA EN BAS DE PAGE ===== #}
+    <div class="cta-grid">
+        {# Bloc pour les enseignants #}
+        <div class="cta-bloc cta-enseignant">
+            <p>
+                Vous êtes enseignant ou directeur d'établissement ?
+                <strong>Faites découvrir à vos jeunes de façon exclusive leurs futurs métiers !</strong>
+            </p>
+
+        </div>
+
+        {# Bloc pour les professionnels #}
+        <div class="cta-bloc cta-professionnel">
+            <p><strong>Envie de faire connaitre vos métiers ?</strong></p>
+        </div>
+    </div>
+
+{% endblock %}
