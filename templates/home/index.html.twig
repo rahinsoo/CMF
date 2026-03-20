@@ -1,22 +1,69 @@
-{# Hérite du template de base #}
+{# ============================================================
+   Template : Page d'accueil (index)
+   Affiche la barre de recherche, les prochains webinars,
+   et les blocs CTA pour enseignants et professionnels.
+   ============================================================ #}
 {% extends 'base.html.twig' %}
 
-{# Définit le titre de la page #}
-{% block title %}{{ titre }}{% endblock %}
+{% block title %}ChooseMyFutur – Découvrez vos futurs métiers{% endblock %}
 
-{# Contenu principal de la page #}
 {% block body %}
-<div style="padding: 20px;">
-    <h1>{{ titre }}</h1>
-    <p>{{ message }}</p>
 
-    {# Créer un lien vers une autre route #}
-    {# path() génère l'URL à partir du nom de la route #}
-    <nav>
-        <ul>
-            <li><a href="{{ path('app_home') }}">Accueil</a></li>
-            <li><a href="{{ path('app_about') }}">À propos</a></li>
-        </ul>
-    </nav>
-</div>
+    {# ===== SECTION HERO : barre de recherche principale ===== #}
+    <section class="hero">
+        <h1 class="hero-titre">Sur quel métier voulez-vous en savoir plus ?</h1>
+
+        {# Formulaire de recherche avec autocomplete #}
+        <div class="search-container">
+
+        </div>
+    </section>
+
+    {# ===== BANDEAU PARTENAIRES (carousel simulé) ===== #}
+    <section class="partenaires">
+        <div class="partenaires-track">
+            {# Logos partenaires répétés pour l'effet défilant #}
+            {% set partenaires = ['Entreprise A', 'Partenaire B', 'Organisation C', 'Institut D', 'Groupe E', 'Réseau F'] %}
+            {% for p in partenaires %}
+                <span class="partenaire-logo">{{ p }}</span>
+            {% endfor %}
+            {# Deuxième passage pour l'animation infinie #}
+            {% for p in partenaires %}
+                <span class="partenaire-logo">{{ p }}</span>
+            {% endfor %}
+        </div>
+    </section>
+
+    {# ===== SECTION PROCHAINS WEBINARS ===== #}
+    <section class="section-webinars">
+        <h2 class="section-titre">Les prochains Webinars</h2>
+
+
+            <p class="info-vide">Aucun webinar à venir pour le moment. Revenez bientôt !</p>
+
+
+        {# Lien vers la liste complète #}
+        <div class="voir-tous">
+
+        </div>
+    </section>
+
+    {# ===== BLOCS CTA EN BAS DE PAGE ===== #}
+    <div class="cta-grid">
+        {# Bloc pour les enseignants #}
+        <div class="cta-bloc cta-enseignant">
+            <p>
+                Vous êtes enseignant ou directeur d'établissement ?
+                <strong>Faites découvrir à vos jeunes de façon exclusive leurs futurs métiers !</strong>
+            </p>
+
+        </div>
+
+        {# Bloc pour les professionnels #}
+        <div class="cta-bloc cta-professionnel">
+            <p><strong>Envie de faire connaitre vos métiers ?</strong></p>
+
+        </div>
+    </div>
+
 {% endblock %}
