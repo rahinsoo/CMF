@@ -26,7 +26,11 @@ echo ">>> Construction des images Docker..."
 docker-compose build
 
 echo ">>> Démarrage des conteneurs..."
-docker-compose up -d
+# installation du docker via docker-compose.yml
+# docker-compose up -d
+# # installation du docker via docker-compose.yml et docker-compose.jitsi.yml
+# --env-file .env.jitsi : On passe le fichier de variables d'environnement spécifique à Jitsi.
+docker-compose -f docker-compose.yml -f docker-compose.jitsi.yml --env-file .env.jitsi up -d
 
 # ============================================
 # Attendre que les conteneurs soient prêts.
